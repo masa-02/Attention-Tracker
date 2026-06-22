@@ -1,0 +1,12 @@
+{
+    "model_info": {
+        "provider": "attn-hf",
+        "name": "llama3.2-3b-attn",
+        "model_id": "meta-llama/Llama-3.2-3B-Instruct"
+    },
+    "params": {
+        "temperature": 0.1,
+        "max_output_tokens": 32,
+        "important_heads": []
+    }
+}

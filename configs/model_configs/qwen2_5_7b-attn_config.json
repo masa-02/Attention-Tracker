@@ -1,0 +1,17 @@
+{
+    "model_info": {
+        "provider": "attn-hf",
+        "name": "qwen2.5-7b-attn",
+        "model_id": "Qwen/Qwen2.5-7B"
+    },
+    "params": {
+        "temperature": 0.1,
+        "max_output_tokens": 32,
+        "important_heads": [
+            [
+                19,
+                27
+            ]
+        ]
+    }
+}

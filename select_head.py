@@ -1,5 +1,7 @@
 import argparse
+import json
 import numpy as np
+from pathlib import Path
 from tqdm import tqdm
 from datasets import load_dataset
 from utils import open_config, create_model
@@ -8,7 +10,7 @@ from detector.utils import process_attn
 def find_pos_div_index(diff_map_mean, diff_map_std, n=2):
     pos_heads = (diff_map_mean -  n * diff_map_std) > 0
     indices = np.where(pos_heads)
-    index_pairs = [list(pair) for pair in zip(indices[0], indices[1])]
+    index_pairs = [[int(layer), int(head)] for layer, head in zip(indices[0], indices[1])]
     print(f"pos index: {len(index_pairs)}, total: {diff_map_mean.shape[0]*diff_map_mean.shape[1]}")
     
     return index_pairs
@@ -19,9 +21,22 @@ def find_top_div_index(diff_map_mean, diff_map_std, portion=0.1):
     total_heads = len(flattened_pos_heads)
     top_n = max(int(portion * total_heads), 1)
     top_indices = np.argpartition(flattened_pos_heads, -top_n)[-top_n:]
-    top_index_pairs = [list(np.unravel_index(idx, pos_heads.shape)) for idx in top_indices]
+    top_index_pairs = [
+        [int(layer), int(head)]
+        for layer, head in (np.unravel_index(idx, pos_heads.shape) for idx in top_indices)
+    ]
 
     return top_index_pairs
+
+def update_important_heads(config_path, heads):
+    config_path = Path(config_path)
+    model_config = open_config(config_path=config_path)
+    model_config["params"]["important_heads"] = heads
+    tmp_path = config_path.with_suffix(config_path.suffix + ".tmp")
+    with tmp_path.open("w") as f:
+        json.dump(model_config, f, indent=4)
+        f.write("\n")
+    tmp_path.replace(config_path)
 
 def main(args):
     model_config_path = f"./configs/model_configs/{args.model_name}_config.json"
@@ -126,11 +141,20 @@ def main(args):
     print("Testing dataset: ", args.dataset)
     print("Testing model: ", args.model_name)
     
+    selected_heads = None
     for i in range(6):
         print(f"======== index pos (n={i}) =========")
         pos_index_div = find_pos_div_index(diff_map_mean, diff_map_std, n=i)
         print(pos_index_div)
         print(f"propotion: {len(pos_index_div)} ({len(pos_index_div)/(diff_map_mean.shape[0]*diff_map_mean.shape[1])})")
+        if i == args.select_k:
+            selected_heads = pos_index_div
+
+    if args.update_config:
+        if selected_heads is None:
+            raise ValueError(f"select_k must be in range 0..5, got {args.select_k}")
+        update_important_heads(model_config_path, selected_heads)
+        print(f"Updated {model_config_path} important_heads with n={args.select_k}: {selected_heads}")
         
     # for i in [0.75, 0.5, 0.25, 0.1, 0.05, 0.01, 0.005, 0.001]:
     #     print(f"======== index pos (n={i}) =========")
@@ -143,6 +167,8 @@ if __name__ == '__main__':
     parser.add_argument('--model_name', default='qwen2-attn', type=str)
     parser.add_argument('--num_data', default=10, type=int)
     parser.add_argument('--select_index', default="0", type=str)
+    parser.add_argument('--select_k', default=4, type=int)
+    parser.add_argument('--update_config', action='store_true')
     parser.add_argument('--dataset', type=str)
     args = parser.parse_args()
 

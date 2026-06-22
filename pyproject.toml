@@ -8,10 +8,11 @@ dependencies = [
     "accelerate>=1.14.0",
     "datasets>=5.0.0",
     "gradio==4.15.0",
-    "huggingface-hub==0.25.2",
+    "huggingface-hub>=0.30.0,<1.0",
+    "matplotlib>=3.10.0",
     "protobuf>=7.35.1",
     "scikit-learn>=1.7.2",
     "sentencepiece>=0.2.1",
     "torch>=2.9,<2.11",
-    "transformers>=4.48.3",
+    "transformers>=4.51.0,<5",
 ]

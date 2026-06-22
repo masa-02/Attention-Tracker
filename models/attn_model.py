@@ -37,6 +37,45 @@ class AttentionModel(Model):
         attention_map = attention_maps[0]
         return len(attention_map), attention_map[0].shape[1]
 
+    @staticmethod
+    def _find_token_span(input_ids, target_ids, occurrence="first"):
+        if not target_ids:
+            return None
+
+        target_len = len(target_ids)
+        matches = [
+            idx
+            for idx in range(len(input_ids) - target_len + 1)
+            if input_ids[idx:idx + target_len] == target_ids
+        ]
+        if not matches:
+            return None
+
+        start = matches[-1] if occurrence == "last" else matches[0]
+        return (start, start + target_len)
+
+    def _find_text_span(self, input_ids, text, occurrence="first"):
+        candidates = [text]
+        if not text.startswith(" "):
+            candidates.append(" " + text)
+
+        for candidate in candidates:
+            target_ids = self.tokenizer.encode(candidate, add_special_tokens=False)
+            span = self._find_token_span(input_ids, target_ids, occurrence=occurrence)
+            if span is not None:
+                return span
+        return None
+
+    def _qwen_data_range(self, input_ids, instruction, data):
+        instruction_range = self._find_text_span(input_ids, instruction, occurrence="first")
+        data_range = self._find_text_span(input_ids, data, occurrence="last")
+        if instruction_range is not None and data_range is not None:
+            return (instruction_range, data_range)
+
+        instruction_len = len(self.tokenizer.encode(instruction))
+        data_len = len(self.tokenizer.encode(data))
+        return ((3, 3 + instruction_len), (-5 - data_len, -5))
+
     def inference(self, instruction, data, max_output_tokens=None):
         messages = [
             {"role": "system", "content": instruction},
@@ -44,10 +83,15 @@ class AttentionModel(Model):
         ]
 
         # Use tokenization with minimal overhead
+        chat_template_kwargs = {}
+        if "qwen3" in self.name:
+            chat_template_kwargs["enable_thinking"] = False
+
         text = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
-            add_generation_prompt=True
+            add_generation_prompt=True,
+            **chat_template_kwargs,
         )
 
         instruction_len = len(self.tokenizer.encode(instruction))
@@ -57,13 +101,14 @@ class AttentionModel(Model):
             [text], return_tensors="pt").to(self.model.device)
         input_tokens = self.tokenizer.convert_ids_to_tokens(
             model_inputs['input_ids'][0])
+        input_ids_for_range = model_inputs["input_ids"][0].tolist()
 
         # find the data token positions
         if "qwen" in self.name:
-            data_range = ((3, 3+instruction_len), (-5-data_len, -5))
+            data_range = self._qwen_data_range(input_ids_for_range, instruction, data)
         elif "phi3" in self.name:
             data_range = ((1, 1+instruction_len), (-2-data_len, -2))
-        elif "llama3-8b" in self.name:
+        elif "llama3" in self.name or "llama-3" in self.name:
             data_range = ((5, 5+instruction_len), (-5-data_len, -5))
         elif "mistral-7b" in self.name:
             data_range = ((3, 3+instruction_len), (-1-data_len, -1))

@@ -278,7 +278,21 @@ def main(args):
     model_names = parse_model_names(args.model_name)
 
     for model_name in model_names:
-        render_model(args, model_name, normal_data, attack_data)
+        try:
+            render_model(args, model_name, normal_data, attack_data)
+        except RuntimeError as exc:
+            message = str(exc).lower()
+            if "out of memory" in message or "cuda" in message:
+                print(f"Skip {model_name}: CUDA runtime error while rendering attention maps: {exc}", file=sys.stderr)
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                continue
+            raise
+        except Exception as exc:
+            print(f"Skip {model_name}: failed to render attention maps: {exc}", file=sys.stderr)
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
+            continue
 
 
 if __name__ == "__main__":
