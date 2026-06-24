@@ -11,6 +11,7 @@ dependencies = [
     "huggingface-hub>=0.30.0,<1.0",
     "matplotlib>=3.10.0",
     "protobuf>=7.35.1",
+    "pyyaml>=6.0.3",
     "scikit-learn>=1.7.2",
     "sentencepiece>=0.2.1",
     "torch>=2.9,<2.11",

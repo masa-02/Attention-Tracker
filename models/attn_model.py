@@ -70,13 +70,55 @@ class AttentionModel(Model):
         instruction_range = self._find_text_span(input_ids, instruction, occurrence="first")
         data_range = self._find_text_span(input_ids, data, occurrence="last")
         if instruction_range is not None and data_range is not None:
-            return (instruction_range, data_range)
+            return (instruction_range, data_range), "subsequence"
 
         instruction_len = len(self.tokenizer.encode(instruction))
         data_len = len(self.tokenizer.encode(data))
-        return ((3, 3 + instruction_len), (-5 - data_len, -5))
+        return ((3, 3 + instruction_len), (-5 - data_len, -5)), "fallback_fixed_offset"
 
-    def inference(self, instruction, data, max_output_tokens=None):
+    @staticmethod
+    def _absolute_range(rng, length):
+        start, end = rng
+        if start < 0:
+            start = length + start
+        if end < 0:
+            end = length + end
+        return max(start, 0), min(end, length)
+
+    def _build_trace(self, text, input_tokens, data_range, span_source, generated_tokens,
+                     generated_probs, attention_maps, nonfinite_attention_count):
+        token_count = len(input_tokens)
+        instruction_range = data_range[0]
+        untrusted_data_range = data_range[1]
+        instruction_abs = self._absolute_range(instruction_range, token_count)
+        data_abs = self._absolute_range(untrusted_data_range, token_count)
+        attention_shape = None
+        if attention_maps and attention_maps[0]:
+            attention_shape = list(attention_maps[0][0].shape)
+
+        return {
+            "rendered_prompt": text,
+            "input_tokens": list(input_tokens),
+            "input_token_count": token_count,
+            "instruction_range": list(instruction_range),
+            "data_range": list(untrusted_data_range),
+            "instruction_range_abs": list(instruction_abs),
+            "data_range_abs": list(data_abs),
+            "instruction_tokens": list(input_tokens[instruction_abs[0]:instruction_abs[1]]),
+            "data_tokens": list(input_tokens[data_abs[0]:data_abs[1]]),
+            "span_source": span_source,
+            "generated_token_ids": [int(token) for token in generated_tokens],
+            "generated_tokens": [
+                self.tokenizer.decode(token, skip_special_tokens=True)
+                for token in generated_tokens
+            ],
+            "generated_probs": [float(prob) for prob in generated_probs],
+            "attention_shape": attention_shape,
+            "attention_steps": len(attention_maps),
+            "nonfinite_attention_count": int(nonfinite_attention_count),
+        }
+
+    def inference(self, instruction, data, max_output_tokens=None, return_trace=False):
         messages = [
             {"role": "system", "content": instruction},
             {"role": "user", "content": "Data: " + data}
@@ -105,15 +147,19 @@ class AttentionModel(Model):
 
         # find the data token positions
         if "qwen" in self.name:
-            data_range = self._qwen_data_range(input_ids_for_range, instruction, data)
+            data_range, span_source = self._qwen_data_range(input_ids_for_range, instruction, data)
         elif "phi3" in self.name:
             data_range = ((1, 1+instruction_len), (-2-data_len, -2))
+            span_source = "fixed_offset"
         elif "llama3" in self.name or "llama-3" in self.name:
             data_range = ((5, 5+instruction_len), (-5-data_len, -5))
+            span_source = "fixed_offset"
         elif "mistral-7b" in self.name:
             data_range = ((3, 3+instruction_len), (-1-data_len, -1))
+            span_source = "fixed_offset"
         elif "granite3-8b" in self.name:
             data_range = ((3, 3+instruction_len), (-5-data_len, -5))
+            span_source = "fixed_offset"
         else:
             raise NotImplementedError
 
@@ -123,6 +169,7 @@ class AttentionModel(Model):
         attention_mask = model_inputs.attention_mask
 
         attention_maps = []
+        nonfinite_attention_count = 0
 
         if max_output_tokens != None:
             n_tokens = max_output_tokens
@@ -154,6 +201,10 @@ class AttentionModel(Model):
                 attention_mask = torch.cat(
                     (attention_mask, torch.tensor([[1]], device=input_ids.device)), dim=-1)
 
+                nonfinite_attention_count += sum(
+                    int((~torch.isfinite(attention)).sum().item())
+                    for attention in output['attentions']
+                )
                 attention_map = [attention.detach().cpu().half()
                                  for attention in output['attentions']]
                 attention_map = [torch.nan_to_num(
@@ -165,5 +216,18 @@ class AttentionModel(Model):
             token, skip_special_tokens=True) for token in generated_tokens]
         generated_text = self.tokenizer.decode(
             generated_tokens, skip_special_tokens=True)
+
+        if return_trace:
+            trace = self._build_trace(
+                text,
+                input_tokens,
+                data_range,
+                span_source,
+                generated_tokens,
+                generated_probs,
+                attention_maps,
+                nonfinite_attention_count,
+            )
+            return generated_text, output_tokens, attention_maps, input_tokens, data_range, generated_probs, trace
 
         return generated_text, output_tokens, attention_maps, input_tokens, data_range, generated_probs

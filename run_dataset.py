@@ -4,9 +4,11 @@ import json
 import random
 import torch
 import numpy as np
+from pathlib import Path
 from tqdm import tqdm
 from datasets import load_dataset
-from utils import open_config, create_model
+from audit import append_jsonl, dataset_path, default_run_id, resolve_audit_dir, write_json, write_yaml
+from utils import create_model, load_runtime_config
 from detector.attn import AttentionDetector
 from sklearn.metrics import roc_auc_score, average_precision_score, confusion_matrix
 
@@ -20,43 +22,90 @@ def set_seed(seed):
     torch.backends.cudnn.benchmark = False
 
 def main(args):
-    set_seed(args.seed)
+    model_config, config_path = load_runtime_config(
+        model_name=args.model_name if not args.config else None,
+        config=args.config,
+    )
+    runtime_config = model_config.get("runtime", {})
+    audit_config = model_config.get("audit", {})
 
-    output_logs = f"./result/{args.dataset_name}/{args.model_name}-{args.seed}.json"
-    output_result = f"./result/{args.dataset_name}/result.jsonl"
-    
-    model_config_path = f"./configs/model_configs/{args.model_name}_config.json"
-    model_config = open_config(config_path=model_config_path)
+    dataset_name = args.dataset_name if args.dataset_name is not None else runtime_config.get("dataset_name", "deepset/prompt-injections")
+    seed = args.seed if args.seed is not None else int(runtime_config.get("seed", 0))
+    instruction = args.instruction if args.instruction is not None else runtime_config.get("instruction", "Say xxxxxx")
+    output_dir = args.output_dir if args.output_dir is not None else runtime_config.get("output_dir", "result")
+    audit_enabled = bool(args.audit_log or audit_config.get("enabled", False))
+    model_name = model_config["model_info"]["name"] if args.config else args.model_name
+    run_id = args.run_id or audit_config.get("run_id") or default_run_id(model_name, seed)
+    audit_dir = args.audit_dir or audit_config.get("audit_dir")
+
+    set_seed(seed)
+
+    output_logs = Path(output_dir) / dataset_path(dataset_name) / f"{model_name}-{seed}.json"
+    output_result = Path(output_dir) / dataset_path(dataset_name) / "result.jsonl"
 
     model = create_model(config=model_config)
     model.print_model_info()
 
-    dataset = load_dataset(args.dataset_name)
+    dataset = load_dataset(dataset_name)
     test_data = dataset['test']
     
-    detector = AttentionDetector(model)
+    detector = AttentionDetector(model, instruction=instruction)
     print("===================")
     print(f"Using detector: {detector.name}")
 
     labels, predictions, scores = [], [], []
     logs = []
+    audit_run_dir = None
+    samples_path = None
+    if audit_enabled:
+        audit_run_dir = resolve_audit_dir(output_dir, dataset_name, run_id, audit_dir=audit_dir)
+        audit_run_dir.mkdir(parents=True, exist_ok=True)
+        samples_path = audit_run_dir / "samples.jsonl"
+        samples_path.write_text("", encoding="utf-8")
+        write_yaml(audit_run_dir / "config_snapshot.yaml", {
+            "config_path": str(config_path),
+            "config": model_config,
+            "runtime": {
+                "dataset_name": dataset_name,
+                "seed": seed,
+                "instruction": instruction,
+                "output_dir": output_dir,
+            },
+            "audit": {
+                "enabled": True,
+                "run_id": run_id,
+                "audit_dir": str(audit_run_dir),
+            },
+        })
 
-    for data in tqdm(test_data):
-        result = detector.detect(data['text'])
-        detect = result[0]
-        score = result[1]['focus_score']
+    for sample_idx, data in enumerate(tqdm(test_data)):
+        detect, details = detector.detect(data['text'], return_trace=audit_enabled)
+        score = details['focus_score']
 
         labels.append(data['label'])
         predictions.append(detect)
         scores.append(1-score)
 
+        legacy_result = [detect, {"focus_score": score}]
         result_data = {
             "text": data['text'],
             "label": data['label'],
-            "result": result
+            "result": legacy_result
         }
 
         logs.append(result_data)
+        if audit_enabled:
+            append_jsonl(samples_path, {
+                "sample_index": sample_idx,
+                "text": data["text"],
+                "label": data["label"],
+                "prediction": bool(detect),
+                "focus_score": score,
+                "threshold": details["threshold"],
+                "selected_head_summary": details["selected_head_summary"],
+                "selected_head_scores": details["selected_head_scores"],
+                "trace": details["trace"],
+            })
 
     auc_score = roc_auc_score(labels, scores)
     auprc_score = average_precision_score(labels, scores)
@@ -73,28 +122,56 @@ def main(args):
     print(f"AUC Score: {auc_score}; AUPRC Score: {auprc_score}; FNR: {fnr}; FPR: {fpr}")
     
     os.makedirs(os.path.dirname(output_logs), exist_ok=True)
-    with open(output_logs, "w") as f_out:
+    with open(output_logs, "w", encoding="utf-8") as f_out:
         f_out.write(json.dumps({"result": logs}, indent=4))
 
     os.makedirs(os.path.dirname(output_result), exist_ok=True)
-    with open(output_result, "a") as f_out:
+    with open(output_result, "a", encoding="utf-8") as f_out:
         f_out.write(json.dumps({
-            "model": args.model_name,
-            "seed": args.seed,
+            "model": model_name,
+            "seed": seed,
             "auc": auc_score,
             "auprc": auprc_score,
             "fnr": fnr,
             "fpr": fpr
         }) + "\n")
 
+    if audit_enabled:
+        write_json(audit_run_dir / "summary.json", {
+            "model": model_name,
+            "model_id": model_config["model_info"]["model_id"],
+            "config_path": str(config_path),
+            "dataset_name": dataset_name,
+            "seed": seed,
+            "instruction": instruction,
+            "run_id": run_id,
+            "num_samples": len(logs),
+            "metrics": {
+                "auc": auc_score,
+                "auprc": auprc_score,
+                "fnr": fnr,
+                "fpr": fpr,
+            },
+            "legacy_result_path": str(output_logs),
+            "legacy_summary_path": str(output_result),
+            "samples_path": str(samples_path),
+        })
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Prompt Injection Detection Script")
     
+    parser.add_argument("--config", type=str, default=None,
+                        help="Path or stem for a JSON/YAML runtime config.")
     parser.add_argument("--model_name", type=str, default="qwen2-attn",
                         help="Path to the model configuration file.")
-    parser.add_argument("--dataset_name", type=str, default="deepset/prompt-injections", 
+    parser.add_argument("--dataset_name", type=str, default=None,
                         help="Path to the dataset.")
-    parser.add_argument("--seed", type=int, default=0)
+    parser.add_argument("--seed", type=int, default=None)
+    parser.add_argument("--instruction", type=str, default=None)
+    parser.add_argument("--output_dir", type=str, default=None)
+    parser.add_argument("--audit-log", action="store_true")
+    parser.add_argument("--audit-dir", type=str, default=None)
+    parser.add_argument("--run-id", type=str, default=None)
     
     args = parser.parse_args()
 

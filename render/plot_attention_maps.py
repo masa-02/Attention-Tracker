@@ -19,7 +19,7 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 from detector.utils import process_attn
-from utils import create_model, open_config
+from utils import create_model, load_runtime_config
 
 
 DEFAULT_MODELS = [
@@ -119,9 +119,9 @@ def load_paired_data(dataset_name, num_data):
     raise ValueError(f"Unsupported dataset: {dataset_name}")
 
 
-def load_model(model_name):
-    config_path = PROJECT_ROOT / "configs" / "model_configs" / f"{model_name}_config.json"
-    model_config = open_config(config_path=config_path)
+def load_model(model_name=None, model_config=None):
+    if model_config is None:
+        model_config, _ = load_runtime_config(model_name=model_name)
     model_config["params"]["max_output_tokens"] = 1
     model = create_model(config=model_config)
     model.print_model_info()
@@ -200,11 +200,12 @@ def draw_token_layer_map(data, tokens, title, output_path):
     plt.close(fig)
 
 
-def render_model(args, model_name, normal_data, attack_data):
-    output_dir = Path(args.output_dir) / sanitize_label(model_name)
+def render_model(args, model_name, normal_data, attack_data, model_config=None):
+    render_name = model_config["model_info"]["name"] if model_config else model_name
+    output_dir = Path(args.output_dir) / sanitize_label(render_name)
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    model = load_model(model_name)
+    model = load_model(model_name=model_name, model_config=model_config)
 
     normal_maps = collect_head_maps(model, args.instruction, normal_data)
     attack_maps = collect_head_maps(model, args.instruction, attack_data)
@@ -213,7 +214,7 @@ def render_model(args, model_name, normal_data, attack_data):
     attack_mean = np.mean(attack_maps, axis=0)
     diff_mean = normal_mean - attack_mean
 
-    prefix = f"{sanitize_label(model_name)}_{sanitize_label(args.dataset)}"
+    prefix = f"{sanitize_label(render_name)}_{sanitize_label(args.dataset)}"
     np.savez_compressed(
         output_dir / f"{prefix}_attention_maps.npz",
         normal_mean=normal_mean,
@@ -225,7 +226,7 @@ def render_model(args, model_name, normal_data, attack_data):
 
     draw_head_map(
         normal_mean,
-        f"{model_name} Normal Data",
+        f"{render_name} Normal Data",
         output_dir / f"{prefix}_normal_heads.png",
         cmap="YlGnBu",
         vmin=0,
@@ -233,7 +234,7 @@ def render_model(args, model_name, normal_data, attack_data):
     )
     draw_head_map(
         attack_mean,
-        f"{model_name} Attack Data",
+        f"{render_name} Attack Data",
         output_dir / f"{prefix}_attack_heads.png",
         cmap="YlGnBu",
         vmin=0,
@@ -242,7 +243,7 @@ def render_model(args, model_name, normal_data, attack_data):
     diff_abs = max(abs(float(diff_mean.min())), abs(float(diff_mean.max())))
     draw_head_map(
         diff_mean,
-        f"{model_name} Normal - Attack",
+        f"{render_name} Normal - Attack",
         output_dir / f"{prefix}_diff_heads.png",
         cmap="coolwarm",
         vmin=-diff_abs,
@@ -254,13 +255,13 @@ def render_model(args, model_name, normal_data, attack_data):
     draw_token_layer_map(
         token_layer_heatmap(normal_attention),
         normal_tokens,
-        f"{model_name} Normal Tokens",
+        f"{render_name} Normal Tokens",
         output_dir / f"{prefix}_normal_tokens_layers.png",
     )
     draw_token_layer_map(
         token_layer_heatmap(attack_attention),
         attack_tokens,
-        f"{model_name} Attack Tokens",
+        f"{render_name} Attack Tokens",
         output_dir / f"{prefix}_attack_tokens_layers.png",
     )
 
@@ -274,12 +275,36 @@ def parse_model_names(model_names):
 
 
 def main(args):
+    model_config = None
+    if args.config:
+        model_config, _ = load_runtime_config(config=args.config)
+        runtime_config = model_config.get("runtime", {})
+        head_config = model_config.get("head_selection", {})
+        if args.dataset is None:
+            runtime_dataset = runtime_config.get("dataset_name")
+            args.dataset = "deepset" if runtime_dataset == "deepset/prompt-injections" else head_config.get("dataset", "deepset")
+        if args.num_data is None:
+            args.num_data = int(head_config.get("num_data", 30))
+        if args.instruction is None:
+            args.instruction = runtime_config.get("instruction", "Say xxxxxx")
+        if args.output_dir is None:
+            args.output_dir = str(PROJECT_ROOT / "render" / "outputs")
+    else:
+        if args.dataset is None:
+            args.dataset = "deepset"
+        if args.num_data is None:
+            args.num_data = 30
+        if args.instruction is None:
+            args.instruction = "Say xxxxxx"
+        if args.output_dir is None:
+            args.output_dir = str(PROJECT_ROOT / "render" / "outputs")
+
     normal_data, attack_data = load_paired_data(args.dataset, args.num_data)
-    model_names = parse_model_names(args.model_name)
+    model_names = [model_config["model_info"]["name"]] if model_config else parse_model_names(args.model_name)
 
     for model_name in model_names:
         try:
-            render_model(args, model_name, normal_data, attack_data)
+            render_model(args, model_name, normal_data, attack_data, model_config=model_config)
         except RuntimeError as exc:
             message = str(exc).lower()
             if "out of memory" in message or "cuda" in message:
@@ -297,14 +322,15 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Render Attention-Tracker attention map figures.")
+    parser.add_argument("--config", default=None, type=str)
     parser.add_argument("--model_name", default=["all"], nargs="+", type=str)
-    parser.add_argument("--dataset", default="deepset", choices=["llm", "deepset"])
+    parser.add_argument("--dataset", default=None, choices=["llm", "deepset"])
     parser.add_argument(
         "--num_data",
-        default=30,
+        default=None,
         type=int,
         help="Number of normal samples and attack samples to average for each model.",
     )
-    parser.add_argument("--instruction", default="Say xxxxxx", type=str)
-    parser.add_argument("--output_dir", default=str(PROJECT_ROOT / "render" / "outputs"), type=str)
+    parser.add_argument("--instruction", default=None, type=str)
+    parser.add_argument("--output_dir", default=None, type=str)
     main(parser.parse_args())

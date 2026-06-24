@@ -34,7 +34,49 @@ class AttentionModelNoSys(Model):
         attention_map = attention_maps[0]
         return len(attention_map), attention_map[0].shape[1]
 
-    def inference(self, instruction, data, max_output_tokens=None):
+    @staticmethod
+    def _absolute_range(rng, length):
+        start, end = rng
+        if start < 0:
+            start = length + start
+        if end < 0:
+            end = length + end
+        return max(start, 0), min(end, length)
+
+    def _build_trace(self, text, input_tokens, data_range, generated_tokens,
+                     generated_probs, attention_maps, nonfinite_attention_count):
+        token_count = len(input_tokens)
+        instruction_range = data_range[0]
+        untrusted_data_range = data_range[1]
+        instruction_abs = self._absolute_range(instruction_range, token_count)
+        data_abs = self._absolute_range(untrusted_data_range, token_count)
+        attention_shape = None
+        if attention_maps and attention_maps[0]:
+            attention_shape = list(attention_maps[0][0].shape)
+
+        return {
+            "rendered_prompt": text,
+            "input_tokens": list(input_tokens),
+            "input_token_count": token_count,
+            "instruction_range": list(instruction_range),
+            "data_range": list(untrusted_data_range),
+            "instruction_range_abs": list(instruction_abs),
+            "data_range_abs": list(data_abs),
+            "instruction_tokens": list(input_tokens[instruction_abs[0]:instruction_abs[1]]),
+            "data_tokens": list(input_tokens[data_abs[0]:data_abs[1]]),
+            "span_source": "fixed_offset",
+            "generated_token_ids": [int(token) for token in generated_tokens],
+            "generated_tokens": [
+                self.tokenizer.decode(token, skip_special_tokens=True)
+                for token in generated_tokens
+            ],
+            "generated_probs": [float(prob) for prob in generated_probs],
+            "attention_shape": attention_shape,
+            "attention_steps": len(attention_maps),
+            "nonfinite_attention_count": int(nonfinite_attention_count),
+        }
+
+    def inference(self, instruction, data, max_output_tokens=None, return_trace=False):
         data = "Data: " + data
         messages = [
             {"role": "user", "content": instruction + "\n" + data},
@@ -66,6 +108,7 @@ class AttentionModelNoSys(Model):
 
         # Ensure attention maps are stored minimally to save memory
         attention_maps = []
+        nonfinite_attention_count = 0
 
         if max_output_tokens != None:
             n_tokens = max_output_tokens
@@ -101,6 +144,10 @@ class AttentionModelNoSys(Model):
                     (attention_mask, torch.tensor([[1]], device=input_ids.device)), dim=-1)
 
                 # Detach attention maps early to reduce memory
+                nonfinite_attention_count += sum(
+                    int((~torch.isfinite(attention)).sum().item())
+                    for attention in output['attentions']
+                )
                 attention_map = [attention.detach().cpu().half()
                                  for attention in output['attentions']]
                 attention_map = [torch.nan_to_num(
@@ -111,5 +158,17 @@ class AttentionModelNoSys(Model):
             token, skip_special_tokens=True) for token in generated_tokens]
         generated_text = self.tokenizer.decode(
             generated_tokens, skip_special_tokens=True)
+
+        if return_trace:
+            trace = self._build_trace(
+                text,
+                input_tokens,
+                data_range,
+                generated_tokens,
+                generated_probs,
+                attention_maps,
+                nonfinite_attention_count,
+            )
+            return generated_text, output_tokens, attention_maps, input_tokens, data_range, generated_probs, trace
 
         return generated_text, output_tokens, attention_maps, input_tokens, data_range, generated_probs

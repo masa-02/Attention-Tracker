@@ -31,6 +31,21 @@ def process_attn(attention, rng, attn_func):
 
 
 def calc_attn_score(heatmap, heads):
+    if not heads:
+        raise ValueError("important_heads is empty. Run head selection or set params.important_heads before detection.")
     score = np.mean([heatmap[l, h] for l, h in heads], axis=0)
     return score
+
+
+def calc_head_scores(heatmap, heads):
+    if not heads:
+        raise ValueError("important_heads is empty. Run head selection or set params.important_heads before detection.")
+    return [
+        {
+            "layer": int(layer),
+            "head": int(head),
+            "score": float(heatmap[layer, head]),
+        }
+        for layer, head in heads
+    ]
 

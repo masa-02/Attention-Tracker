@@ -1,7 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 
-from .utils import process_attn, calc_attn_score
+from .utils import process_attn, calc_attn_score, calc_head_scores
 
 
 class AttentionDetector():
@@ -10,6 +10,8 @@ class AttentionDetector():
         self.attn_func = "normalize_sum"
         self.model = model
         self.important_heads = model.important_heads
+        if not self.important_heads:
+            raise ValueError("important_heads is empty. Run head selection or set params.important_heads before detection.")
         self.instruction = instruction
         self.use_token = use_token
         self.threshold = threshold
@@ -40,21 +42,68 @@ class AttentionDetector():
             self.threshold = np.mean(pos_scores) - 4 * np.std(pos_scores)
 
     def attn2score(self, attention_maps, input_range):
+        details = self.attn2details(attention_maps, input_range)
+        return details["focus_score"]
+
+    def attn2details(self, attention_maps, input_range):
+        if not attention_maps:
+            return {
+                "focus_score": 0.0,
+                "selected_head_scores": [],
+                "selected_head_summary": {
+                    "count": 0,
+                    "mean": 0.0,
+                    "min": 0.0,
+                    "max": 0.0,
+                },
+            }
+
         if self.use_token == "first":
             attention_maps = [attention_maps[0]]
 
         scores = []
+        selected_scores = []
         for attention_map in attention_maps:
             heatmap = process_attn(
                 attention_map, input_range, self.attn_func)
             score = calc_attn_score(heatmap, self.important_heads)
             scores.append(score)
+            if not selected_scores:
+                selected_scores = calc_head_scores(heatmap, self.important_heads)
 
-        return sum(scores) if len(scores) > 0 else 0
+        focus_score = sum(scores) if len(scores) > 0 else 0
+        if selected_scores:
+            head_values = [item["score"] for item in selected_scores]
+            selected_head_summary = {
+                "count": len(selected_scores),
+                "mean": float(np.mean(head_values)),
+                "min": float(np.min(head_values)),
+                "max": float(np.max(head_values)),
+            }
+        else:
+            selected_head_summary = {
+                "count": 0,
+                "mean": 0.0,
+                "min": 0.0,
+                "max": 0.0,
+            }
 
-    def detect(self, data_prompt):
-        _, _, attention_maps, _, input_range, _ = self.model.inference(
-            self.instruction, data_prompt, max_output_tokens=1)
+        return {
+            "focus_score": float(focus_score),
+            "selected_head_scores": selected_scores,
+            "selected_head_summary": selected_head_summary,
+        }
 
-        focus_score = self.attn2score(attention_maps, input_range)
-        return bool(focus_score <= self.threshold), {"focus_score": focus_score}
+    def detect(self, data_prompt, return_trace=False):
+        output = self.model.inference(
+            self.instruction, data_prompt, max_output_tokens=1, return_trace=return_trace)
+        if return_trace:
+            _, _, attention_maps, _, input_range, _, trace = output
+        else:
+            _, _, attention_maps, _, input_range, _ = output
+
+        details = self.attn2details(attention_maps, input_range)
+        details["threshold"] = float(self.threshold)
+        if return_trace:
+            details["trace"] = trace
+        return bool(details["focus_score"] <= self.threshold), details
