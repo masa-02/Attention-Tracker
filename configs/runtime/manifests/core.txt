@@ -1,0 +1,11 @@
+# Core architecture comparison set from the experiment plan.
+configs/runtime/qwen2.5-7b-instruct.yml
+configs/runtime/llama-3.1-8b-instruct.yml
+configs/runtime/deepseek-v2-lite-chat.yml
+configs/runtime/moonlight-16b-a3b-instruct.yml
+configs/runtime/mistral-nemo-instruct-2407.yml
+configs/runtime/mistral-small-3.2-24b-instruct-2506.yml
+configs/runtime/gemma-3-4b-it.yml
+configs/runtime/gemma-3-12b-it.yml
+configs/runtime/gemma-3-27b-it.yml
+configs/runtime/gemma-4-26b-a4b-it.yml

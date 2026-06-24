@@ -1,27 +1,23 @@
 model_info:
   provider: attn-hf
-  name: qwen-2.5-8b-attn
-  model_id: Qwen/Qwen2.5-7B-Instruct
-
+  name: qwen2.5-14b-instruct-attn
+  model_id: Qwen/Qwen2.5-14B-Instruct
 params:
   temperature: 0.1
   max_output_tokens: 32
-  important_heads:
-    - [19, 27]
-
+  important_heads: []
 runtime:
   dataset_name: deepset/prompt-injections
   seed: 0
   instruction: Say xxxxxx
   output_dir: result
-
 audit:
   enabled: true
-  run_id: qwen-2.5-8B-gate1
+  run_id: qwen2.5-14b-instruct-gate1
   audit_dir: null
-
 head_selection:
   dataset: llm
   num_data: 30
   select_k: 4
   update_config: false
+
