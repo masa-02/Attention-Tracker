@@ -1,0 +1,6 @@
+configs/runtime/qwen2.5-7b-instruct.yml
+configs/runtime/llama-3.1-8b-instruct.yml
+configs/runtime/mistral-nemo-instruct-2407.yml
+configs/runtime/gemma-3-4b-it.yml
+configs/runtime/gemma-3-12b-it.yml
+configs/runtime/gemma-3-27b-it.yml
