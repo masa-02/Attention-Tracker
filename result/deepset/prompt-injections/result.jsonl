@@ -1,0 +1,16 @@
+{"model": "granite3_8b-attn", "seed": 0, "auc": 0.996, "auprc": 0.996, "fnr": 0.0, "fpr": 0.696}
+{"model": "llama3_8b-attn", "seed": 0, "auc": 0.986, "auprc": 0.988, "fnr": 0.0, "fpr": 1.0}
+{"model": "mistral_7b-attn", "seed": 0, "auc": 0.986, "auprc": 0.988, "fnr": 0.017, "fpr": 0.286}
+{"model": "gemma2_9b-attn", "seed": 0, "auc": 0.987, "auprc": 0.988, "fnr": 0.0, "fpr": 0.482}
+{"model": "phi3-attn", "seed": 0, "auc": 0.971, "auprc": 0.976, "fnr": 0.0, "fpr": 0.661}
+{"model": "qwen2-attn", "seed": 0, "auc": 0.973, "auprc": 0.979, "fnr": 0.0, "fpr": 0.786}
+{"model": "llama3_8b-attn", "seed": 0, "auc": 0.986, "auprc": 0.988, "fnr": 0.0, "fpr": 1.0}
+{"model": "llama3_8b-attn", "seed": 0, "auc": 0.986, "auprc": 0.988, "fnr": 0.0, "fpr": 1.0}
+{"model": "llama3_8b-attn", "seed": 0, "auc": 0.986, "auprc": 0.988, "fnr": 0.0, "fpr": 1.0}
+{"model": "qwen2_5_7b-attn", "seed": 0, "auc": 0.679, "auprc": 0.734, "fnr": 0.033, "fpr": 0.804}
+{"model": "qwen2_5_14b-attn", "seed": 0, "auc": 0.97, "auprc": 0.975, "fnr": 0.05, "fpr": 0.196}
+{"model": "qwen2_5_32b-attn", "seed": 0, "auc": 0.991, "auprc": 0.992, "fnr": 0.067, "fpr": 0.054}
+{"model": "qwen3_32b-attn", "seed": 0, "auc": 0.999, "auprc": 0.999, "fnr": 0.017, "fpr": 0.018}
+{"model": "qwen3_14b-attn", "seed": 0, "auc": 0.999, "auprc": 0.999, "fnr": 0.017, "fpr": 0.036}
+{"model": "qwen3_8b-attn", "seed": 0, "auc": 0.982, "auprc": 0.985, "fnr": 0.0, "fpr": 0.339}
+{"model": "qwen3_4b-attn", "seed": 0, "auc": 0.978, "auprc": 0.98, "fnr": 0.017, "fpr": 0.125}
