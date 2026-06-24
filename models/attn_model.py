@@ -1,7 +1,13 @@
 import torch
 from .model import Model
-from .utils import sample_token, get_last_attn, tokenizer_kwargs_for_model
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from .utils import (
+    causal_model_class_for_model,
+    get_last_attn,
+    model_kwargs_for_model,
+    sample_token,
+    tokenizer_kwargs_for_model,
+)
+from transformers import AutoTokenizer
 import torch.nn.functional as F
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
@@ -16,12 +22,10 @@ class AttentionModel(Model):
             model_id,
             **tokenizer_kwargs_for_model(self.name, model_id),
         )
-        self.model = AutoModelForCausalLM.from_pretrained(
+        model_class = causal_model_class_for_model(self.name, model_id)
+        self.model = model_class.from_pretrained(
             model_id,
-            torch_dtype=torch.bfloat16,
-            device_map=device,
-            trust_remote_code=True,
-            attn_implementation="eager",
+            **model_kwargs_for_model(self.name, model_id, device),
         ).eval()
 
         self.top_k = 50
@@ -140,7 +144,7 @@ class AttentionModel(Model):
 
         # Use tokenization with minimal overhead
         chat_template_kwargs = {}
-        if "qwen3" in self.name:
+        if "qwen3" in self.name or "gemma-4" in self.name or "gemma4" in self.name:
             chat_template_kwargs["enable_thinking"] = False
 
         text = self.tokenizer.apply_chat_template(

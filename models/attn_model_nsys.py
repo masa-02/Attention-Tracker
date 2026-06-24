@@ -1,8 +1,13 @@
 import torch
 from .model import Model
 import torch.nn.functional as F
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from .utils import sample_token, tokenizer_kwargs_for_model
+from transformers import AutoTokenizer
+from .utils import (
+    causal_model_class_for_model,
+    model_kwargs_for_model,
+    sample_token,
+    tokenizer_kwargs_for_model,
+)
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -16,12 +21,10 @@ class AttentionModelNoSys(Model):
             model_id,
             **tokenizer_kwargs_for_model(self.name, model_id),
         )
-        self.model = AutoModelForCausalLM.from_pretrained(
+        model_class = causal_model_class_for_model(self.name, model_id)
+        self.model = model_class.from_pretrained(
             model_id,
-            torch_dtype=torch.bfloat16,
-            device_map=device,
-            trust_remote_code=True,
-            attn_implementation="eager"
+            **model_kwargs_for_model(self.name, model_id, device),
         ).eval()
         if config["params"]["important_heads"] == "all":
             attn_size = self.get_map_dim()
@@ -127,10 +130,15 @@ class AttentionModelNoSys(Model):
             {"role": "user", "content": instruction + "\n" + data},
         ]
 
+        chat_template_kwargs = {}
+        if "gemma-4" in self.name or "gemma4" in self.name:
+            chat_template_kwargs["enable_thinking"] = False
+
         text = self.tokenizer.apply_chat_template(
             messages,
             tokenize=False,
-            add_generation_prompt=True
+            add_generation_prompt=True,
+            **chat_template_kwargs,
         )
 
         instruction_len = len(self.tokenizer.encode(instruction))
