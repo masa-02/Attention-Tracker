@@ -1,3 +1,5 @@
+set -euo pipefail
+
 MODELS=(
     "qwen2_5_1_5b-attn"
     "qwen2_5_3b-attn"
@@ -26,7 +28,9 @@ for MODEL in "${MODELS[@]}"; do
     if ! uv run python run_dataset.py \
         --model_name "${MODEL}" \
         --dataset_name "${DATASET_NAME}" \
-        --seed "${SEED}"; then
+        --seed "${SEED}" \
+        --audit-log \
+        --run-id "${MODEL}-${SEED}-gate1"; then
         echo "Skip ${MODEL}: failed during dataset evaluation. This may be caused by insufficient GPU memory, gated model access, or an unavailable model id."
         continue
     fi

@@ -1,3 +1,5 @@
+set -euo pipefail
+
 MODELS=(
     "llama3_8b-attn"
     # "llama3_70b-attn"
@@ -19,7 +21,9 @@ for MODEL in "${MODELS[@]}"; do
     if ! uv run python run_dataset.py \
         --model_name "${MODEL}" \
         --dataset_name "${DATASET_NAME}" \
-        --seed "${SEED}"; then
+        --seed "${SEED}" \
+        --audit-log \
+        --run-id "${MODEL}-${SEED}-gate1"; then
         echo "Skip ${MODEL}: failed during dataset evaluation. This may be caused by insufficient GPU memory or gated model access."
         continue
     fi

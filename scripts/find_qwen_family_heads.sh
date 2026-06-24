@@ -1,3 +1,5 @@
+set -euo pipefail
+
 MODELS=(
     "qwen2_5_1_5b-attn"
     "qwen2_5_3b-attn"
@@ -18,6 +20,8 @@ NUM_DATA="${2:-30}"
 OUTPUT_FILE="${3:-analysis_qwen_family.txt}"
 SELECT_K="${4:-4}"
 
+: > "${OUTPUT_FILE}"
+
 for MODEL in "${MODELS[@]}"; do
     echo "===== ${MODEL} =====" >> "${OUTPUT_FILE}"
     if ! uv run python3 -u select_head.py \
@@ -25,7 +29,9 @@ for MODEL in "${MODELS[@]}"; do
         --num_data "${NUM_DATA}" \
         --dataset "${DATASET}" \
         --select_k "${SELECT_K}" \
-        --update_config >> "${OUTPUT_FILE}" 2>> "${OUTPUT_FILE}"; then
+        --update_config \
+        --audit-log \
+        --run-id "${MODEL}-head-selection" >> "${OUTPUT_FILE}" 2>> "${OUTPUT_FILE}"; then
         echo "Skip ${MODEL}: failed during head selection. This may be caused by insufficient GPU memory, gated model access, or an unavailable model id." >> "${OUTPUT_FILE}"
         continue
     fi
