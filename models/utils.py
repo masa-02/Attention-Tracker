@@ -2,6 +2,32 @@ import torch
 import torch.nn.functional as F
 
 
+def tokenizer_kwargs_for_model(model_name, model_id):
+    model_key = f"{model_name} {model_id}".lower()
+    kwargs = {"trust_remote_code": True}
+
+    if "mistral" in model_key:
+        kwargs["fix_mistral_regex"] = True
+
+    if "gemma-4" in model_key or "gemma4" in model_key:
+        kwargs["extra_special_tokens"] = {"video_token": "<|video|>"}
+
+    return kwargs
+
+
+def causal_model_class_for_model(model_name, model_id):
+    model_key = f"{model_name} {model_id}".lower()
+
+    if "mistral-small-3.2" in model_key or "mistral3" in model_key:
+        from transformers.models.mistral3 import Mistral3ForConditionalGeneration
+
+        return Mistral3ForConditionalGeneration
+
+    from transformers import AutoModelForCausalLM
+
+    return AutoModelForCausalLM
+
+
 def get_last_attn(attn_map):
     for i, layer in enumerate(attn_map):
         attn_map[i] = layer[:, :, -1, :].unsqueeze(2)
@@ -22,4 +48,3 @@ def sample_token(logits, top_k=None, top_p=None, temperature=1.0):
         return next_token_id
 
     return logits.argmax(dim=-1).squeeze()
-

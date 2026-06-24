@@ -2,7 +2,7 @@ import torch
 from .model import Model
 import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModelForCausalLM
-from .utils import sample_token
+from .utils import sample_token, tokenizer_kwargs_for_model
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -12,11 +12,15 @@ class AttentionModelNoSys(Model):
         self.name = config["model_info"]["name"]
         self.max_output_tokens = int(config["params"]["max_output_tokens"])
         model_id = config["model_info"]["model_id"]
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_id,
+            **tokenizer_kwargs_for_model(self.name, model_id),
+        )
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
             torch_dtype=torch.bfloat16,
             device_map=device,
+            trust_remote_code=True,
             attn_implementation="eager"
         ).eval()
         if config["params"]["important_heads"] == "all":
@@ -169,7 +173,8 @@ class AttentionModelNoSys(Model):
                 output = self.model(
                     input_ids=input_ids,
                     attention_mask=attention_mask,
-                    output_attentions=True
+                    output_attentions=True,
+                    use_cache=False,
                 )
 
                 # Extract logits and compute probabilities

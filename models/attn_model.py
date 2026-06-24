@@ -1,6 +1,6 @@
 import torch
 from .model import Model
-from .utils import sample_token, get_last_attn
+from .utils import sample_token, get_last_attn, tokenizer_kwargs_for_model
 from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch.nn.functional as F
 
@@ -12,7 +12,10 @@ class AttentionModel(Model):
         self.name = config["model_info"]["name"]
         self.max_output_tokens = int(config["params"]["max_output_tokens"])
         model_id = config["model_info"]["model_id"]
-        self.tokenizer = AutoTokenizer.from_pretrained(model_id)
+        self.tokenizer = AutoTokenizer.from_pretrained(
+            model_id,
+            **tokenizer_kwargs_for_model(self.name, model_id),
+        )
         self.model = AutoModelForCausalLM.from_pretrained(
             model_id,
             torch_dtype=torch.bfloat16,
@@ -203,7 +206,8 @@ class AttentionModel(Model):
                 output = self.model(
                     input_ids=input_ids,
                     attention_mask=attention_mask,
-                    output_attentions=True
+                    output_attentions=True,
+                    use_cache=False,
                 )
 
                 logits = output.logits[:, -1, :]
