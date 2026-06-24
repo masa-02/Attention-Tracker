@@ -66,11 +66,22 @@ class AttentionModel(Model):
                 return span
         return None
 
-    def _qwen_data_range(self, input_ids, instruction, data):
+    def _dynamic_data_range(self, input_ids, instruction, data):
         instruction_range = self._find_text_span(input_ids, instruction, occurrence="first")
         data_range = self._find_text_span(input_ids, data, occurrence="last")
         if instruction_range is not None and data_range is not None:
             return (instruction_range, data_range), "subsequence"
+
+        prefixed_data_range = self._find_text_span(input_ids, "Data: " + data, occurrence="last")
+        if instruction_range is not None and prefixed_data_range is not None:
+            return (instruction_range, prefixed_data_range), "subsequence_prefixed_data"
+
+        return None
+
+    def _qwen_data_range(self, input_ids, instruction, data):
+        dynamic_range = self._dynamic_data_range(input_ids, instruction, data)
+        if dynamic_range is not None:
+            return dynamic_range
 
         instruction_len = len(self.tokenizer.encode(instruction))
         data_len = len(self.tokenizer.encode(data))
@@ -148,20 +159,31 @@ class AttentionModel(Model):
         # find the data token positions
         if "qwen" in self.name:
             data_range, span_source = self._qwen_data_range(input_ids_for_range, instruction, data)
-        elif "phi3" in self.name:
+        else:
+            dynamic_range = self._dynamic_data_range(input_ids_for_range, instruction, data)
+            if dynamic_range is not None:
+                data_range, span_source = dynamic_range
+            else:
+                data_range = None
+                span_source = None
+
+        if span_source is None and "phi3" in self.name:
             data_range = ((1, 1+instruction_len), (-2-data_len, -2))
             span_source = "fixed_offset"
-        elif "llama3" in self.name or "llama-3" in self.name:
+        elif span_source is None and ("llama3" in self.name or "llama-3" in self.name):
             data_range = ((5, 5+instruction_len), (-5-data_len, -5))
             span_source = "fixed_offset"
-        elif "mistral-7b" in self.name:
+        elif span_source is None and "mistral" in self.name:
             data_range = ((3, 3+instruction_len), (-1-data_len, -1))
             span_source = "fixed_offset"
-        elif "granite3-8b" in self.name:
+        elif span_source is None and "granite3-8b" in self.name:
             data_range = ((3, 3+instruction_len), (-5-data_len, -5))
             span_source = "fixed_offset"
-        else:
-            raise NotImplementedError
+        elif span_source is None:
+            raise ValueError(
+                f"Could not resolve instruction/data spans for {self.name}. "
+                "Use a model name with a known fallback or inspect the chat template."
+            )
 
         generated_tokens = []
         generated_probs = []

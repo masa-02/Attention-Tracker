@@ -35,6 +35,47 @@ class AttentionModelNoSys(Model):
         return len(attention_map), attention_map[0].shape[1]
 
     @staticmethod
+    def _find_token_span(input_ids, target_ids, occurrence="first"):
+        if not target_ids:
+            return None
+
+        target_len = len(target_ids)
+        matches = [
+            idx
+            for idx in range(len(input_ids) - target_len + 1)
+            if input_ids[idx:idx + target_len] == target_ids
+        ]
+        if not matches:
+            return None
+
+        start = matches[-1] if occurrence == "last" else matches[0]
+        return (start, start + target_len)
+
+    def _find_text_span(self, input_ids, text, occurrence="first"):
+        candidates = [text]
+        if not text.startswith(" "):
+            candidates.append(" " + text)
+
+        for candidate in candidates:
+            target_ids = self.tokenizer.encode(candidate, add_special_tokens=False)
+            span = self._find_token_span(input_ids, target_ids, occurrence=occurrence)
+            if span is not None:
+                return span
+        return None
+
+    def _dynamic_data_range(self, input_ids, instruction, data):
+        instruction_range = self._find_text_span(input_ids, instruction, occurrence="first")
+        data_range = self._find_text_span(input_ids, data, occurrence="last")
+        if instruction_range is not None and data_range is not None:
+            return (instruction_range, data_range), "subsequence"
+
+        prefixed_data_range = self._find_text_span(input_ids, "Data: " + data, occurrence="last")
+        if instruction_range is not None and prefixed_data_range is not None:
+            return (instruction_range, prefixed_data_range), "subsequence_prefixed_data"
+
+        return None
+
+    @staticmethod
     def _absolute_range(rng, length):
         start, end = rng
         if start < 0:
@@ -43,7 +84,7 @@ class AttentionModelNoSys(Model):
             end = length + end
         return max(start, 0), min(end, length)
 
-    def _build_trace(self, text, input_tokens, data_range, generated_tokens,
+    def _build_trace(self, text, input_tokens, data_range, span_source, generated_tokens,
                      generated_probs, attention_maps, nonfinite_attention_count):
         token_count = len(input_tokens)
         instruction_range = data_range[0]
@@ -64,7 +105,7 @@ class AttentionModelNoSys(Model):
             "data_range_abs": list(data_abs),
             "instruction_tokens": list(input_tokens[instruction_abs[0]:instruction_abs[1]]),
             "data_tokens": list(input_tokens[data_abs[0]:data_abs[1]]),
-            "span_source": "fixed_offset",
+            "span_source": span_source,
             "generated_token_ids": [int(token) for token in generated_tokens],
             "generated_tokens": [
                 self.tokenizer.decode(token, skip_special_tokens=True)
@@ -96,10 +137,17 @@ class AttentionModelNoSys(Model):
         input_tokens = self.tokenizer.convert_ids_to_tokens(
             model_inputs['input_ids'][0])
 
-        if "gemma2_9b-attn" in self.name:
+        dynamic_range = self._dynamic_data_range(model_inputs["input_ids"][0].tolist(), instruction, data)
+        if dynamic_range is not None:
+            data_range, span_source = dynamic_range
+        elif "gemma" in self.name:
             data_range = ((5, 5+instruction_len), (-4-data_len, -5))
+            span_source = "fixed_offset"
         else:
-            raise NotImplementedError
+            raise ValueError(
+                f"Could not resolve instruction/data spans for {self.name}. "
+                "Use a model name with a known fallback or inspect the chat template."
+            )
 
         generated_tokens = []
         generated_probs = []  # Store probabilities of generated tokens
@@ -164,6 +212,7 @@ class AttentionModelNoSys(Model):
                 text,
                 input_tokens,
                 data_range,
+                span_source,
                 generated_tokens,
                 generated_probs,
                 attention_maps,
