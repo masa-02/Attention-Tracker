@@ -1,7 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 
-from .utils import process_attn, calc_attn_score, calc_head_scores
+from .utils import process_attn, calc_attn_score, calc_head_scores, compute_attention_summary
 
 
 class AttentionDetector():
@@ -94,7 +94,7 @@ class AttentionDetector():
             "selected_head_summary": selected_head_summary,
         }
 
-    def detect(self, data_prompt, return_trace=False):
+    def detect(self, data_prompt, return_trace=False, return_full=False):
         output = self.model.inference(
             self.instruction, data_prompt, max_output_tokens=1, return_trace=return_trace)
         if return_trace:
@@ -106,4 +106,6 @@ class AttentionDetector():
         details["threshold"] = float(self.threshold)
         if return_trace:
             details["trace"] = trace
+        if return_full:
+            details["attention_summary"] = compute_attention_summary(attention_maps, input_range)
         return bool(details["focus_score"] <= self.threshold), details

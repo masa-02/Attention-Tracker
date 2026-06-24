@@ -12,6 +12,8 @@ from utils import create_model, load_runtime_config
 from detector.attn import AttentionDetector
 from sklearn.metrics import roc_auc_score, average_precision_score, confusion_matrix
 
+ATTENTION_SUMMARY_VERSION = "at-attn-summary-v1"
+
 def set_seed(seed):
     random.seed(seed)
     np.random.seed(seed)
@@ -34,6 +36,7 @@ def main(args):
     instruction = args.instruction if args.instruction is not None else runtime_config.get("instruction", "Say xxxxxx")
     output_dir = args.output_dir if args.output_dir is not None else runtime_config.get("output_dir", "result")
     audit_enabled = bool(args.audit_log or audit_config.get("enabled", False))
+    attn_summary_enabled = bool(args.attn_summary or audit_config.get("attention_summary", False))
     model_name = model_config["model_info"]["name"] if args.config else args.model_name
     run_id = args.run_id or audit_config.get("run_id") or default_run_id(model_name, seed)
     audit_dir = args.audit_dir or audit_config.get("audit_dir")
@@ -57,11 +60,17 @@ def main(args):
     logs = []
     audit_run_dir = None
     samples_path = None
-    if audit_enabled:
+    attn_summary_accum = {"instruction_mass": [], "data_mass": [], "ratio": [], "entropy": []}
+    attn_summary_index = []
+    attn_summary_label = []
+    attn_summary_span_source = []
+    if audit_enabled or attn_summary_enabled:
         audit_run_dir = resolve_audit_dir(output_dir, dataset_name, run_id, audit_dir=audit_dir)
         audit_run_dir.mkdir(parents=True, exist_ok=True)
-        samples_path = audit_run_dir / "samples.jsonl"
-        samples_path.write_text("", encoding="utf-8")
+    if audit_enabled or attn_summary_enabled:
+        if audit_enabled:
+            samples_path = audit_run_dir / "samples.jsonl"
+            samples_path.write_text("", encoding="utf-8")
         write_yaml(audit_run_dir / "config_snapshot.yaml", {
             "config_path": str(config_path),
             "config": model_config,
@@ -72,19 +81,31 @@ def main(args):
                 "output_dir": output_dir,
             },
             "audit": {
-                "enabled": True,
+                "enabled": audit_enabled,
+                "attention_summary": attn_summary_enabled,
                 "run_id": run_id,
                 "audit_dir": str(audit_run_dir),
             },
         })
 
     for sample_idx, data in enumerate(tqdm(test_data)):
-        detect, details = detector.detect(data['text'], return_trace=audit_enabled)
+        detect, details = detector.detect(
+            data['text'], return_trace=audit_enabled, return_full=attn_summary_enabled
+        )
         score = details['focus_score']
 
         labels.append(data['label'])
         predictions.append(detect)
         scores.append(1-score)
+
+        if attn_summary_enabled and details.get("attention_summary"):
+            summary = details["attention_summary"]
+            for key in attn_summary_accum:
+                attn_summary_accum[key].append(summary[key])
+            attn_summary_index.append(sample_idx)
+            attn_summary_label.append(data['label'])
+            span_source = details.get("trace", {}).get("span_source") if audit_enabled else None
+            attn_summary_span_source.append(span_source if span_source is not None else "")
 
         legacy_result = [detect, {"focus_score": score}]
         result_data = {
@@ -136,7 +157,25 @@ def main(args):
             "fpr": fpr
         }) + "\n")
 
-    if audit_enabled:
+    attention_summary_info = None
+    if attn_summary_enabled and attn_summary_index:
+        attn_summary_path = audit_run_dir / "attention_summary.npz"
+        stacked = {key: np.stack(vals, axis=0) for key, vals in attn_summary_accum.items()}
+        np.savez_compressed(
+            attn_summary_path,
+            sample_index=np.array(attn_summary_index),
+            label=np.array(attn_summary_label),
+            span_source=np.array(attn_summary_span_source),
+            **stacked,
+        )
+        attention_summary_info = {
+            "path": str(attn_summary_path),
+            "metrics": list(attn_summary_accum.keys()),
+            "shape": list(stacked["ratio"].shape),
+            "extraction_version": ATTENTION_SUMMARY_VERSION,
+        }
+
+    if audit_enabled or attn_summary_enabled:
         write_json(audit_run_dir / "summary.json", {
             "model": model_name,
             "model_id": model_config["model_info"]["model_id"],
@@ -154,7 +193,8 @@ def main(args):
             },
             "legacy_result_path": str(output_logs),
             "legacy_summary_path": str(output_result),
-            "samples_path": str(samples_path),
+            "samples_path": str(samples_path) if samples_path else None,
+            "attention_summary": attention_summary_info,
         })
 
 if __name__ == "__main__":
@@ -170,6 +210,8 @@ if __name__ == "__main__":
     parser.add_argument("--instruction", type=str, default=None)
     parser.add_argument("--output_dir", type=str, default=None)
     parser.add_argument("--audit-log", action="store_true")
+    parser.add_argument("--attn-summary", action="store_true",
+                        help="Write full [L,H] attention summary arrays to attention_summary.npz")
     parser.add_argument("--audit-dir", type=str, default=None)
     parser.add_argument("--run-id", type=str, default=None)
     
