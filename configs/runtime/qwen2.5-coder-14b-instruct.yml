@@ -15,9 +15,9 @@ audit:
   enabled: true
   run_id: qwen2.5-coder-14b-gate1
   audit_dir: null
+  attention_summary: false   # set true to write full [L,H] attention arrays (attention_summary.npz)
 head_selection:
   dataset: llm
   num_data: 30
   select_k: 4
   update_config: false
-
