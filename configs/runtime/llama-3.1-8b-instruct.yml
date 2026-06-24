@@ -5,7 +5,17 @@ model_info:
 params:
   temperature: 0.1
   max_output_tokens: 32
-  important_heads: []
+  important_heads:
+  - - 2
+    - 24
+  - - 5
+    - 18
+  - - 8
+    - 18
+  - - 13
+    - 23
+  - - 17
+    - 2
 runtime:
   dataset_name: deepset/prompt-injections
   seed: 0
