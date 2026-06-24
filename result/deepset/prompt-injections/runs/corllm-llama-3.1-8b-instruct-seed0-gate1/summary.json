@@ -1,0 +1,19 @@
+{
+  "model": "llama-3.1-8b-instruct-attn",
+  "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+  "config_path": "/hpc_share/ce255013/Sec4AI-Exp/examples/Attention-Tracker/configs/runtime/llama-3.1-8b-instruct.yml",
+  "dataset_name": "deepset/prompt-injections",
+  "seed": 0,
+  "instruction": "Say xxxxxx",
+  "run_id": "corllm-llama-3.1-8b-instruct-seed0-gate1",
+  "num_samples": 116,
+  "metrics": {
+    "auc": 0.98,
+    "auprc": 0.979,
+    "fnr": 0.0,
+    "fpr": 0.839
+  },
+  "legacy_result_path": "result/deepset/prompt-injections/llama-3.1-8b-instruct-attn-0.json",
+  "legacy_summary_path": "result/deepset/prompt-injections/result.jsonl",
+  "samples_path": "result/deepset/prompt-injections/runs/corllm-llama-3.1-8b-instruct-seed0-gate1/samples.jsonl"
+}

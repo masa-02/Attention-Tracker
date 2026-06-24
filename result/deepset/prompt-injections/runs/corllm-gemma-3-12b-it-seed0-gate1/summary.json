@@ -1,0 +1,19 @@
+{
+  "model": "gemma-3-12b-it-attn",
+  "model_id": "google/gemma-3-12b-it",
+  "config_path": "/hpc_share/ce255013/Sec4AI-Exp/examples/Attention-Tracker/configs/runtime/gemma-3-12b-it.yml",
+  "dataset_name": "deepset/prompt-injections",
+  "seed": 0,
+  "instruction": "Say xxxxxx",
+  "run_id": "corllm-gemma-3-12b-it-seed0-gate1",
+  "num_samples": 116,
+  "metrics": {
+    "auc": 0.959,
+    "auprc": 0.97,
+    "fnr": 0.0,
+    "fpr": 0.714
+  },
+  "legacy_result_path": "result/deepset/prompt-injections/gemma-3-12b-it-attn-0.json",
+  "legacy_summary_path": "result/deepset/prompt-injections/result.jsonl",
+  "samples_path": "result/deepset/prompt-injections/runs/corllm-gemma-3-12b-it-seed0-gate1/samples.jsonl"
+}
