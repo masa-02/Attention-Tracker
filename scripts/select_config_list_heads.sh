@@ -17,7 +17,7 @@ fi
 if ! [[ "${SELECT_K}" =~ ^[0-9]+$ ]]; then
     echo "Error: select_k must be an integer, got '${SELECT_K}'." >&2
     echo "Usage: $0 [list_file] [head_dataset] [num_data] [select_k] [output_file] [run_prefix] [success_file]" >&2
-    echo "Example: $0 configs/runtime/manifests/core.txt llm 30 4 analysis_core_heads.txt core-gate1 analysis_core_selected.txt" >&2
+    echo "Example: $0 configs/runtime/manifests/core.txt llm 30 4 analysis_core_heads.txt core-phase1 analysis_core_selected.txt" >&2
     exit 2
 fi
 
@@ -61,3 +61,4 @@ while IFS= read -r CONFIG || [[ -n "${CONFIG}" ]]; do
         echo "${CONFIG}" >> "${SUCCESS_FILE}"
     fi
 done < "${LIST_FILE}"
+

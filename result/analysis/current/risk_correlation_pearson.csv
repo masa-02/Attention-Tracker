@@ -1,0 +1,7 @@
+model,gemma-3-12b-it-attn,gemma-3-27b-it-attn,gemma-3-4b-it-attn,llama-3.1-8b-instruct-attn,mistral-nemo-instruct-2407-attn,qwen2.5-7b-instruct-attn
+gemma-3-12b-it-attn,1.0,0.878,0.937,0.855,0.918,0.859
+gemma-3-27b-it-attn,0.878,1.0,0.907,0.875,0.945,0.916
+gemma-3-4b-it-attn,0.937,0.907,1.0,0.922,0.952,0.895
+llama-3.1-8b-instruct-attn,0.855,0.875,0.922,1.0,0.94,0.893
+mistral-nemo-instruct-2407-attn,0.918,0.945,0.952,0.94,1.0,0.943
+qwen2.5-7b-instruct-attn,0.859,0.916,0.895,0.893,0.943,1.0

@@ -10,5 +10,6 @@ for MODEL in "${MODELS[@]}"; do
         --dataset_name "${DATASET_NAME}" \
         --seed "${SEED}" \
         --audit-log \
-        --run-id "${MODEL}-${SEED}-gate1"
+        --run-id "${MODEL}-${SEED}-phase1"
 done
+

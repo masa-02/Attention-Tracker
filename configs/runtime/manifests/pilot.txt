@@ -1,4 +1,4 @@
-# Small first-pass set for Gate 1 smoke experiments.
+# Small first-pass set for Phase1 smoke experiments.
 configs/runtime/qwen2.5-7b-instruct.yml
 configs/runtime/llama-3.1-8b-instruct.yml
 configs/runtime/qwen3-8b.yml

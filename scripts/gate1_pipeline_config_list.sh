@@ -1,7 +1,7 @@
 set -euo pipefail
 
 LIST_FILE="${1:-configs/runtime/manifests/pilot.txt}"
-RUN_PREFIX="${2:-gate1-list}"
+RUN_PREFIX="${2:-phase1-list}"
 HEAD_DATASET="${3:-llm}"
 HEAD_NUM_DATA="${4:-30}"
 SELECT_K="${5:-4}"
@@ -17,7 +17,7 @@ fi
 if ! [[ "${SELECT_K}" =~ ^[0-9]+$ ]]; then
     echo "Error: select_k must be an integer, got '${SELECT_K}'." >&2
     echo "Usage: $0 [list_file] [run_prefix] [head_dataset] [head_num_data] [select_k] [eval_dataset] [seed]" >&2
-    echo "Example: $0 configs/runtime/manifests/core.txt core-gate1 llm 30 4 deepset/prompt-injections 0" >&2
+    echo "Example: $0 configs/runtime/manifests/core.txt core-phase1 llm 30 4 deepset/prompt-injections 0" >&2
     exit 2
 fi
 
@@ -46,3 +46,4 @@ SUCCESS_LIST="analysis_${RUN_PREFIX}_selected_configs.txt"
     "${SEED}" \
     "${EVAL_LOG}" \
     "${RUN_PREFIX}"
+

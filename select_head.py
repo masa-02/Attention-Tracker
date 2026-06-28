@@ -7,6 +7,7 @@ from datasets import load_dataset
 from audit import default_run_id, resolve_audit_dir, write_json
 from utils import create_model, load_runtime_config, open_config, write_config
 from detector.utils import process_attn
+from phase2_core import write_selected_heads_parquet
 
 def find_pos_div_index(diff_map_mean, diff_map_std, n=2):
     pos_heads = (diff_map_mean -  n * diff_map_std) > 0
@@ -43,6 +44,7 @@ def main(args):
     head_config = model_config.get("head_selection", {})
     runtime_config = model_config.get("runtime", {})
     audit_config = model_config.get("audit", {})
+    phase2_config = model_config.get("phase2", {})
     dataset_name = args.dataset if args.dataset is not None else head_config.get("dataset")
     if dataset_name is None:
         raise ValueError("Selection dataset is required. Set --dataset or head_selection.dataset in YAML.")
@@ -51,6 +53,8 @@ def main(args):
     update_config = bool(args.update_config or head_config.get("update_config", False))
     output_dir = args.output_dir if args.output_dir is not None else runtime_config.get("output_dir", "result")
     audit_enabled = bool(args.audit_log or audit_config.get("enabled", False))
+    phase2_enabled = bool(args.phase2 or phase2_config.get("enabled", False))
+    phase2_output_dir = args.phase2_output_dir or phase2_config.get("output_dir", "outputs/phase2")
     model_name = model_config["model_info"]["name"]
     run_id = args.run_id or audit_config.get("run_id") or default_run_id(model_name, "head-selection")
     audit_dir = args.audit_dir or audit_config.get("audit_dir")
@@ -80,7 +84,7 @@ def main(args):
             "After months of training, he finally completed his first marathon.",
             "The old bookstore smelled of aged paper and forgotten stories.",
             "A spaceship landed unexpectedly in the middle of the desert.",
-            "The violinist played a haunting melody that brought tears to the audience’s eyes.",
+            "The violinist played a haunting melody that brought tears to the audience窶冱 eyes.",
             "She designed an app that helps users track their mental health.",
             "The detective carefully examined the footprints near the crime scene.",
             "A sudden gust of wind sent the stack of papers flying in all directions.",
@@ -179,6 +183,21 @@ def main(args):
         update_important_heads(model_config_path, selected_heads)
         print(f"Updated {model_config_path} important_heads with n={select_k}: {selected_heads}")
 
+    phase2_selected_heads_path = None
+    if phase2_enabled:
+        phase2_selected_heads_path = write_selected_heads_parquet(
+            output_dir=phase2_output_dir,
+            run_id=run_id,
+            model_config=model_config,
+            config_path=model_config_path,
+            normal_mean=access_mean_maps,
+            normal_std=access_std_maps,
+            attack_mean=atk_mean_maps,
+            attack_std=atk_std_maps,
+            selected_heads=selected_heads,
+        )
+        print(f"Wrote Phase2 selected-head artifact: {phase2_selected_heads_path}")
+
     if audit_enabled:
         audit_run_dir = resolve_audit_dir(output_dir, "head-selection", run_id, audit_dir=audit_dir)
         write_json(audit_run_dir / "head_selection.json", {
@@ -195,6 +214,10 @@ def main(args):
             "normal_mean": access_mean_maps.tolist(),
             "attack_mean": atk_mean_maps.tolist(),
             "diff_mean": diff_map_mean.tolist(),
+            "phase2": {
+                "enabled": phase2_enabled,
+                "selected_heads_path": phase2_selected_heads_path,
+            },
         })
         
     # for i in [0.75, 0.5, 0.25, 0.1, 0.05, 0.01, 0.005, 0.001]:
@@ -216,6 +239,8 @@ if __name__ == '__main__':
     parser.add_argument('--audit-log', action='store_true')
     parser.add_argument('--audit-dir', type=str, default=None)
     parser.add_argument('--run-id', type=str, default=None)
+    parser.add_argument('--phase2', action='store_true')
+    parser.add_argument('--phase2-output-dir', type=str, default=None)
     args = parser.parse_args()
 
     main(args)

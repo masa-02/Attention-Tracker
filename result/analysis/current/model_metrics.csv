@@ -1,0 +1,7 @@
+model,run_id,num_samples,auc,auprc,fixed_fnr,fixed_fpr,pos_mean_focus,neg_mean_focus,pos_median_focus,neg_median_focus,best_threshold,best_fnr,best_fpr
+gemma-3-12b-it-attn,corllm-gemma-3-12b-it-seed0-gate1,116,0.959,0.97,0.0,0.714,0.176,0.439,0.156,0.395,0.273,0.117,0.054
+gemma-3-27b-it-attn,corllm-gemma-3-27b-it-seed0-gate1,116,0.989,0.991,0.0,0.268,0.232,0.545,0.231,0.548,0.335,0.117,0.0
+gemma-3-4b-it-attn,corllm-gemma-3-4b-it-seed0-gate1,116,0.982,0.984,0.0,0.75,0.115,0.345,0.11,0.284,0.197,0.083,0.036
+llama-3.1-8b-instruct-attn,corllm-llama-3.1-8b-instruct-seed0-gate1,116,0.98,0.979,0.0,0.839,0.1,0.329,0.092,0.306,0.186,0.033,0.054
+mistral-nemo-instruct-2407-attn,corllm-mistral-nemo-instruct-2407-seed0-gate1,116,0.991,0.993,0.0,0.589,0.201,0.503,0.204,0.461,0.293,0.05,0.018
+qwen2.5-7b-instruct-attn,corllm-qwen2.5-7b-instruct-seed0-gate1,116,0.984,0.987,0.05,0.054,0.315,0.652,0.346,0.615,0.467,0.05,0.036

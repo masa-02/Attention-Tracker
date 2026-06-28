@@ -1,7 +1,7 @@
 set -euo pipefail
 
 CONFIG="${1:-configs/runtime/qwen2.5-7b-instruct.yml}"
-RUN_PREFIX="${2:-gate1}"
+RUN_PREFIX="${2:-phase1}"
 HEAD_DATASET="${3:-llm}"
 HEAD_NUM_DATA="${4:-30}"
 SELECT_K="${5:-4}"
@@ -31,3 +31,4 @@ uv run python render/plot_attention_maps.py \
     --dataset "${PLOT_DATASET}" \
     --num_data "${PLOT_NUM_DATA}" \
     --output_dir "render/outputs/${RUN_PREFIX}"
+

@@ -1,7 +1,7 @@
 set -euo pipefail
 
 CONFIG="${1:-configs/runtime/qwen2.5-7b-instruct.yml}"
-RUN_PREFIX="${2:-qwen-gate1-smoke}"
+RUN_PREFIX="${2:-qwen-phase1-smoke}"
 NUM_DATA="${3:-10}"
 SELECT_K="${4:-4}"
 SEED="${5:-0}"
@@ -21,3 +21,4 @@ uv run python run_dataset.py \
     --seed "${SEED}" \
     --audit-log \
     --run-id "${RUN_PREFIX}-dataset"
+

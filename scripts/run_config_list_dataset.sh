@@ -21,9 +21,9 @@ while IFS= read -r CONFIG || [[ -n "${CONFIG}" ]]; do
     NAME="$(basename "${CONFIG}")"
     NAME="${NAME%.*}"
     if [[ -n "${RUN_PREFIX}" ]]; then
-        RUN_ID="${RUN_PREFIX}-${NAME}-seed${SEED}-gate1"
+        RUN_ID="${RUN_PREFIX}-${NAME}-seed${SEED}-phase1"
     else
-        RUN_ID="${NAME}-seed${SEED}-gate1"
+        RUN_ID="${NAME}-seed${SEED}-phase1"
     fi
 
     echo "===== ${CONFIG} =====" >> "${OUTPUT_FILE}"
@@ -42,3 +42,4 @@ while IFS= read -r CONFIG || [[ -n "${CONFIG}" ]]; do
         continue
     fi
 done < "${LIST_FILE}"
+

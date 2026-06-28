@@ -1,7 +1,7 @@
 set -euo pipefail
 
 LIST_FILE="${1:-configs/runtime/manifests/pilot.txt}"
-RUN_PREFIX="${2:-gate1-list}"
+RUN_PREFIX="${2:-phase1-list}"
 HEAD_DATASET="${3:-llm}"
 HEAD_NUM_DATA="${4:-30}"
 SELECT_K="${5:-4}"
@@ -10,7 +10,7 @@ SEED="${7:-0}"
 
 usage() {
     echo "Usage: $0 [list_file] [run_prefix] [head_dataset] [head_num_data] [select_k] [eval_dataset] [seed]" >&2
-    echo "Example: $0 configs/runtime/manifests/core.txt core-gate1 llm 30 4 deepset/prompt-injections 0" >&2
+    echo "Example: $0 configs/runtime/manifests/core.txt core-phase1 llm 30 4 deepset/prompt-injections 0" >&2
 }
 
 if ! [[ "${HEAD_NUM_DATA}" =~ ^[0-9]+$ ]]; then
@@ -85,3 +85,4 @@ done < "${LIST_FILE}"
     "${SEED}" \
     "${EVAL_LOG}" \
     "${RUN_PREFIX}"
+

@@ -1,0 +1,7 @@
+model,head_run,layers,heads,total_heads,selected_heads,selected_fraction,global_diff_mean,global_diff_pos_fraction,selected_diff_mean,selected_normal_mean,selected_attack_mean,selected_depth_mean,selected_depth_min,selected_depth_max,early_fraction,mid_fraction,late_fraction,peak_layer,peak_layer_depth,peak_layer_selected_heads
+gemma-3-12b-it-attn,corllm-gemma-3-12b-it-head-selection,48,16,768,31,0.04,0.154,0.887,0.526,0.641,0.115,0.542,0.234,1.0,0.194,0.548,0.258,23,0.489,3
+gemma-3-27b-it-attn,corllm-gemma-3-27b-it-head-selection,62,32,1984,51,0.026,0.144,0.837,0.481,0.634,0.152,0.38,0.066,0.77,0.314,0.647,0.039,25,0.41,5
+gemma-3-4b-it-attn,corllm-gemma-3-4b-it-head-selection,34,8,272,25,0.092,0.202,0.926,0.482,0.608,0.126,0.408,0.152,0.97,0.36,0.52,0.12,9,0.273,4
+llama-3.1-8b-instruct-attn,corllm-llama-3.1-8b-instruct-head-selection,32,32,1024,5,0.005,0.094,0.877,0.458,0.54,0.081,0.29,0.065,0.548,0.6,0.4,0.0,2,0.065,1
+mistral-nemo-instruct-2407-attn,corllm-mistral-nemo-instruct-2407-head-selection,40,32,1280,99,0.077,0.188,0.944,0.545,0.686,0.141,0.328,0.077,0.615,0.505,0.495,0.0,16,0.41,13
+qwen2.5-7b-instruct-attn,corllm-qwen2.5-7b-instruct-head-selection,28,28,784,35,0.045,0.153,0.829,0.621,0.786,0.165,0.467,0.148,0.815,0.143,0.743,0.114,13,0.481,7

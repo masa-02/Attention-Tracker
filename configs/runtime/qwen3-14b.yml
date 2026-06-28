@@ -13,7 +13,7 @@ runtime:
   output_dir: result
 audit:
   enabled: true
-  run_id: qwen3-14b-gate1
+  run_id: qwen3-14b-phase1
   audit_dir: null
   attention_summary: false   # set true to write full [L,H] attention arrays (attention_summary.npz)
 head_selection:
@@ -21,3 +21,9 @@ head_selection:
   num_data: 30
   select_k: 4
   update_config: false
+
+phase2:
+  enabled: false
+  output_dir: outputs/phase2
+  strict_spans: true
+

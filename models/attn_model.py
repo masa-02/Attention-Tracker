@@ -9,6 +9,7 @@ from .utils import (
 )
 from transformers import AutoTokenizer
 import torch.nn.functional as F
+from phase2_core.spans import iter_text_token_candidates, select_subsequence_match
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
@@ -46,28 +47,10 @@ class AttentionModel(Model):
 
     @staticmethod
     def _find_token_span(input_ids, target_ids, occurrence="first"):
-        if not target_ids:
-            return None
-
-        target_len = len(target_ids)
-        matches = [
-            idx
-            for idx in range(len(input_ids) - target_len + 1)
-            if input_ids[idx:idx + target_len] == target_ids
-        ]
-        if not matches:
-            return None
-
-        start = matches[-1] if occurrence == "last" else matches[0]
-        return (start, start + target_len)
+        return select_subsequence_match(input_ids, target_ids, occurrence=occurrence)
 
     def _find_text_span(self, input_ids, text, occurrence="first"):
-        candidates = [text]
-        if not text.startswith(" "):
-            candidates.append(" " + text)
-
-        for candidate in candidates:
-            target_ids = self.tokenizer.encode(candidate, add_special_tokens=False)
+        for _, target_ids in iter_text_token_candidates(self.tokenizer, text):
             span = self._find_token_span(input_ids, target_ids, occurrence=occurrence)
             if span is not None:
                 return span
@@ -103,7 +86,7 @@ class AttentionModel(Model):
             end = length + end
         return max(start, 0), min(end, length)
 
-    def _build_trace(self, text, input_tokens, data_range, span_source, generated_tokens,
+    def _build_trace(self, text, input_ids, input_tokens, data_range, span_source, generated_tokens,
                      generated_probs, attention_maps, nonfinite_attention_count):
         token_count = len(input_tokens)
         instruction_range = data_range[0]
@@ -116,6 +99,7 @@ class AttentionModel(Model):
 
         return {
             "rendered_prompt": text,
+            "input_ids": [int(token_id) for token_id in input_ids],
             "input_tokens": list(input_tokens),
             "input_token_count": token_count,
             "instruction_range": list(instruction_range),
@@ -250,6 +234,7 @@ class AttentionModel(Model):
         if return_trace:
             trace = self._build_trace(
                 text,
+                model_inputs["input_ids"][0].tolist(),
                 input_tokens,
                 data_range,
                 span_source,

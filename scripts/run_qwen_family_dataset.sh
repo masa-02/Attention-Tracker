@@ -30,8 +30,9 @@ for MODEL in "${MODELS[@]}"; do
         --dataset_name "${DATASET_NAME}" \
         --seed "${SEED}" \
         --audit-log \
-        --run-id "${MODEL}-${SEED}-gate1"; then
+        --run-id "${MODEL}-${SEED}-phase1"; then
         echo "Skip ${MODEL}: failed during dataset evaluation. This may be caused by insufficient GPU memory, gated model access, or an unavailable model id."
         continue
     fi
 done
+

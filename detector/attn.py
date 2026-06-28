@@ -94,18 +94,24 @@ class AttentionDetector():
             "selected_head_summary": selected_head_summary,
         }
 
-    def detect(self, data_prompt, return_trace=False, return_full=False):
+    def detect(self, data_prompt, return_trace=False, return_full=False, return_attention=False):
         output = self.model.inference(
             self.instruction, data_prompt, max_output_tokens=1, return_trace=return_trace)
         if return_trace:
-            _, _, attention_maps, _, input_range, _, trace = output
+            generated_text, output_tokens, attention_maps, _, input_range, _, trace = output
         else:
-            _, _, attention_maps, _, input_range, _ = output
+            generated_text, output_tokens, attention_maps, _, input_range, _ = output
 
         details = self.attn2details(attention_maps, input_range)
         details["threshold"] = float(self.threshold)
+        details["model_output"] = {
+            "text": generated_text,
+            "tokens": output_tokens,
+        }
         if return_trace:
             details["trace"] = trace
         if return_full:
             details["attention_summary"] = compute_attention_summary(attention_maps, input_range)
+        if return_attention:
+            details["_attention_maps"] = attention_maps
         return bool(details["focus_score"] <= self.threshold), details
