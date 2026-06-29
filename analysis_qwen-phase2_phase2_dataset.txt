@@ -1,0 +1,62 @@
+===== phase2 evaluation: configs/runtime/qwen2.5-7b-instruct.yml =====
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:22<01:08, 22.69s/it]Loading checkpoint shards:  50%|█████     | 2/4 [00:46<00:46, 23.22s/it]Loading checkpoint shards:  75%|███████▌  | 3/4 [01:09<00:23, 23.33s/it]Loading checkpoint shards: 100%|██████████| 4/4 [01:30<00:00, 22.26s/it]Loading checkpoint shards: 100%|██████████| 4/4 [01:30<00:00, 22.59s/it]
+--------------------------------------
+| Provider: attn-hf
+| Model name: qwen2.5-7b-instruct-attn
+--------------------------------------
+Traceback (most recent call last):
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/run_dataset.py", line 412, in <module>
+    main(args)
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/run_dataset.py", line 179, in main
+    dataset = load_dataset(dataset_name)
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/datasets/load.py", line 1698, in load_dataset
+    builder_instance = load_dataset_builder(
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/datasets/load.py", line 1325, in load_dataset_builder
+    dataset_module = dataset_module_factory(
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/datasets/load.py", line 1217, in dataset_module_factory
+    raise e1 from None
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/datasets/load.py", line 1124, in dataset_module_factory
+    dataset_readme_path = api.hf_hub_download(
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/huggingface_hub/hf_api.py", line 5467, in hf_hub_download
+    return hf_hub_download(
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/huggingface_hub/utils/_validators.py", line 114, in _inner_fn
+    return fn(*args, **kwargs)
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1014, in hf_hub_download
+    return _hf_hub_download_to_cache_dir(
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/huggingface_hub/file_download.py", line 1131, in _hf_hub_download_to_cache_dir
+    os.makedirs(os.path.dirname(blob_path), exist_ok=True)
+  File "/usr/lib/python3.10/os.py", line 215, in makedirs
+    makedirs(head, exist_ok=exist_ok)
+  File "/usr/lib/python3.10/os.py", line 225, in makedirs
+    mkdir(name, mode)
+OSError: [Errno 28] No space left on device: '/mnt/disks/data/huggingface_cache/hub/datasets--deepset--prompt-injections'
+Skip configs/runtime/qwen2.5-7b-instruct.yml: phase2 dataset evaluation failed. Check GPU memory, HF access, HF download/cache state, model id availability, span mapping, dataset availability, and model-specific attention support.
+===== phase2 evaluation: configs/runtime/qwen2.5-14b-instruct.yml =====
+Loading checkpoint shards:   0%|          | 0/8 [00:00<?, ?it/s]Loading checkpoint shards:  12%|█▎        | 1/8 [00:22<02:34, 22.05s/it]Loading checkpoint shards:  25%|██▌       | 2/8 [00:46<02:19, 23.17s/it]Loading checkpoint shards:  38%|███▊      | 3/8 [01:10<01:58, 23.67s/it]Loading checkpoint shards:  38%|███▊      | 3/8 [01:12<02:01, 24.24s/it]
+Traceback (most recent call last):
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/run_dataset.py", line 412, in <module>
+    main(args)
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/run_dataset.py", line 164, in main
+    model = create_model(config=model_config)
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/utils.py", line 107, in create_model
+    model = AttentionModel(config)
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/models/attn_model.py", line 28, in __init__
+    self.model = model_class.from_pretrained(
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/transformers/models/auto/auto_factory.py", line 604, in from_pretrained
+    return model_class.from_pretrained(
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/transformers/modeling_utils.py", line 277, in _wrapper
+    return func(*args, **kwargs)
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/transformers/modeling_utils.py", line 5048, in from_pretrained
+    ) = cls._load_pretrained_model(
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/transformers/modeling_utils.py", line 5468, in _load_pretrained_model
+    _error_msgs, disk_offload_index = load_shard_file(args)
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/transformers/modeling_utils.py", line 843, in load_shard_file
+    disk_offload_index = _load_state_dict_into_meta_model(
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/torch/utils/_contextlib.py", line 124, in decorate_context
+    return func(*args, **kwargs)
+  File "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/.venv/lib/python3.10/site-packages/transformers/modeling_utils.py", line 750, in _load_state_dict_into_meta_model
+    param = param.to(casting_dtype)
+KeyboardInterrupt
+Skip configs/runtime/qwen2.5-14b-instruct.yml: phase2 dataset evaluation failed. Check GPU memory, HF access, HF download/cache state, model id availability, span mapping, dataset availability, and model-specific attention support.
