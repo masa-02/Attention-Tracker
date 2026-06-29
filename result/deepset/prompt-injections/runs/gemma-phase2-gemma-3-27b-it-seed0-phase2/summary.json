@@ -1,0 +1,55 @@
+{
+  "model": "gemma-3-27b-it-attn",
+  "model_id": "google/gemma-3-27b-it",
+  "model_loading": {
+    "quantization": "4bit",
+    "dtype": "bfloat16",
+    "compute_dtype": "bfloat16",
+    "device_map": "auto",
+    "quant_type": "nf4",
+    "double_quant": true
+  },
+  "config_path": "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/configs/runtime/gemma-3-27b-it.yml",
+  "dataset_name": "deepset/prompt-injections",
+  "seed": 0,
+  "instruction": "Say xxxxxx",
+  "run_id": "gemma-phase2-gemma-3-27b-it-seed0-phase2",
+  "num_samples": 116,
+  "metrics": {
+    "auc": 0.982,
+    "auprc": 0.984,
+    "fnr": 0.05,
+    "fpr": 0.125
+  },
+  "legacy_result_path": "result/deepset/prompt-injections/gemma-3-27b-it-attn-0.json",
+  "legacy_summary_path": "result/deepset/prompt-injections/result.jsonl",
+  "samples_path": "result/deepset/prompt-injections/runs/gemma-phase2-gemma-3-27b-it-seed0-phase2/samples.jsonl",
+  "attention_summary": {
+    "path": "result/deepset/prompt-injections/runs/gemma-phase2-gemma-3-27b-it-seed0-phase2/attention_summary.npz",
+    "metrics": [
+      "instruction_mass",
+      "data_mass",
+      "ratio",
+      "entropy"
+    ],
+    "shape": [
+      116,
+      62,
+      32
+    ],
+    "extraction_version": "at-attn-summary-v1"
+  },
+  "phase2": {
+    "run_dir": "outputs/phase2/gemma-phase2-gemma-3-27b-it-seed0-phase2",
+    "prompts": 116,
+    "attention_summary_path": "outputs/phase2/gemma-phase2-gemma-3-27b-it-seed0-phase2/attention_summary.safetensors",
+    "tables": [
+      "attention_tracker_scores.parquet",
+      "behavior_labels.parquet",
+      "generation_outputs.parquet",
+      "model_metadata.parquet",
+      "prompts.parquet",
+      "token_spans.parquet"
+    ]
+  }
+}

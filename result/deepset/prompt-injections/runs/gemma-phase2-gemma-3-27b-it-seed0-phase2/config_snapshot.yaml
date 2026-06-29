@@ -1,0 +1,137 @@
+config_path: /home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/configs/runtime/gemma-3-27b-it.yml
+config:
+  model_info:
+    provider: attn-hf-no-sys
+    name: gemma-3-27b-it-attn
+    model_id: google/gemma-3-27b-it
+  model_loading:
+    quantization: 4bit
+    dtype: bfloat16
+    compute_dtype: bfloat16
+    device_map: auto
+    quant_type: nf4
+    double_quant: true
+  params:
+    temperature: 0.1
+    max_output_tokens: 32
+    important_heads:
+    - - 4
+      - 26
+    - - 5
+      - 26
+    - - 10
+      - 14
+    - - 11
+      - 23
+    - - 15
+      - 10
+    - - 15
+      - 22
+    - - 17
+      - 20
+    - - 17
+      - 21
+    - - 18
+      - 9
+    - - 18
+      - 23
+    - - 19
+      - 5
+    - - 19
+      - 18
+    - - 19
+      - 19
+    - - 20
+      - 7
+    - - 22
+      - 1
+    - - 22
+      - 13
+    - - 22
+      - 22
+    - - 22
+      - 23
+    - - 23
+      - 4
+    - - 23
+      - 8
+    - - 24
+      - 2
+    - - 24
+      - 3
+    - - 24
+      - 13
+    - - 25
+      - 6
+    - - 25
+      - 10
+    - - 25
+      - 13
+    - - 25
+      - 15
+    - - 25
+      - 21
+    - - 25
+      - 30
+    - - 26
+      - 10
+    - - 26
+      - 12
+    - - 26
+      - 18
+    - - 27
+      - 22
+    - - 28
+      - 4
+    - - 28
+      - 12
+    - - 28
+      - 14
+    - - 28
+      - 30
+    - - 29
+      - 0
+    - - 29
+      - 2
+    - - 29
+      - 6
+    - - 30
+      - 5
+    - - 30
+      - 15
+    - - 34
+      - 20
+  runtime:
+    dataset_name: deepset/prompt-injections
+    seed: 0
+    instruction: Say xxxxxx
+    output_dir: result
+  audit:
+    enabled: true
+    run_id: gemma-3-27b-phase1
+    audit_dir: null
+    attention_summary: false
+  head_selection:
+    dataset: llm
+    num_data: 30
+    select_k: 4
+    update_config: false
+  phase2:
+    enabled: false
+    output_dir: outputs/phase2
+    strict_spans: true
+runtime:
+  dataset_name: deepset/prompt-injections
+  seed: 0
+  instruction: Say xxxxxx
+  output_dir: result
+audit:
+  enabled: true
+  attention_summary: true
+  run_id: gemma-phase2-gemma-3-27b-it-seed0-phase2
+  audit_dir: result/deepset/prompt-injections/runs/gemma-phase2-gemma-3-27b-it-seed0-phase2
+phase2:
+  enabled: true
+  output_dir: outputs/phase2
+  prompt_jsonl: null
+  strict_spans: true

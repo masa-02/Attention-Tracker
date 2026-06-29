@@ -9,7 +9,55 @@ model_loading:
 params:
   temperature: 0.1
   max_output_tokens: 32
-  important_heads: []
+  important_heads:
+  - - 9
+    - 15
+  - - 10
+    - 11
+  - - 11
+    - 9
+  - - 11
+    - 13
+  - - 14
+    - 4
+  - - 14
+    - 15
+  - - 15
+    - 11
+  - - 16
+    - 5
+  - - 16
+    - 14
+  - - 17
+    - 2
+  - - 18
+    - 9
+  - - 18
+    - 15
+  - - 20
+    - 7
+  - - 21
+    - 3
+  - - 21
+    - 7
+  - - 21
+    - 13
+  - - 21
+    - 15
+  - - 23
+    - 2
+  - - 23
+    - 3
+  - - 24
+    - 8
+  - - 25
+    - 14
+  - - 27
+    - 8
+  - - 27
+    - 9
+  - - 32
+    - 13
 runtime:
   dataset_name: deepset/prompt-injections
   seed: 0
@@ -19,15 +67,13 @@ audit:
   enabled: true
   run_id: gemma-2-9b-phase1
   audit_dir: null
-  attention_summary: false   # set true to write full [L,H] attention arrays (attention_summary.npz)
+  attention_summary: false
 head_selection:
   dataset: llm
   num_data: 30
   select_k: 4
   update_config: false
-
 phase2:
   enabled: false
   output_dir: outputs/phase2
   strict_spans: true
-

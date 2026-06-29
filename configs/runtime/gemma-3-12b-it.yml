@@ -25,11 +25,7 @@ params:
   - - 16
     - 9
   - - 17
-    - 11
-  - - 17
     - 12
-  - - 18
-    - 3
   - - 19
     - 9
   - - 20
@@ -38,8 +34,6 @@ params:
     - 10
   - - 21
     - 5
-  - - 23
-    - 2
   - - 23
     - 6
   - - 23
@@ -64,14 +58,8 @@ params:
     - 13
   - - 39
     - 9
-  - - 41
-    - 11
   - - 43
     - 12
-  - - 47
-    - 2
-  - - 47
-    - 15
 runtime:
   dataset_name: deepset/prompt-injections
   seed: 0
@@ -81,15 +69,13 @@ audit:
   enabled: true
   run_id: gemma-3-12b-phase1
   audit_dir: null
-  attention_summary: false   # set true to write full [L,H] attention arrays (attention_summary.npz)
+  attention_summary: false
 head_selection:
   dataset: llm
   num_data: 30
   select_k: 4
   update_config: false
-
 phase2:
   enabled: false
   output_dir: outputs/phase2
   strict_spans: true
-
