@@ -2,6 +2,10 @@ model_info:
   provider: attn-hf
   name: qwen3-14b-attn
   model_id: Qwen/Qwen3-14B
+model_loading:
+  quantization: 8bit
+  dtype: bfloat16
+  device_map: auto
 params:
   temperature: 0.1
   max_output_tokens: 32

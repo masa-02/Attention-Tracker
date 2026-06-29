@@ -26,7 +26,7 @@ class AttentionModel(Model):
         model_class = causal_model_class_for_model(self.name, model_id)
         self.model = model_class.from_pretrained(
             model_id,
-            **model_kwargs_for_model(self.name, model_id, device),
+            **model_kwargs_for_model(self.name, model_id, device, config.get("model_loading", {})),
         ).eval()
 
         self.top_k = 50

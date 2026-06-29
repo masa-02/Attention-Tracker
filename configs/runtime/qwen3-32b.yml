@@ -2,6 +2,13 @@ model_info:
   provider: attn-hf
   name: qwen3-32b-attn
   model_id: Qwen/Qwen3-32B
+model_loading:
+  quantization: 4bit
+  dtype: bfloat16
+  compute_dtype: bfloat16
+  device_map: auto
+  quant_type: nf4
+  double_quant: true
 params:
   temperature: 0.1
   max_output_tokens: 32

@@ -25,7 +25,7 @@ class AttentionModelNoSys(Model):
         model_class = causal_model_class_for_model(self.name, model_id)
         self.model = model_class.from_pretrained(
             model_id,
-            **model_kwargs_for_model(self.name, model_id, device),
+            **model_kwargs_for_model(self.name, model_id, device, config.get("model_loading", {})),
         ).eval()
         if config["params"]["important_heads"] == "all":
             attn_size = self.get_map_dim()

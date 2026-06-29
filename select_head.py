@@ -203,6 +203,7 @@ def main(args):
         write_json(audit_run_dir / "head_selection.json", {
             "model": model_name,
             "model_id": model_config["model_info"]["model_id"],
+            "model_loading": model_config.get("model_loading", {}),
             "config_path": str(model_config_path),
             "dataset": dataset_name,
             "num_data": num_data,

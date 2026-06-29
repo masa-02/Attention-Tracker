@@ -1,5 +1,6 @@
 import torch
 import torch.nn.functional as F
+from importlib.metadata import PackageNotFoundError
 
 
 def _model_key(model_name, model_id):
@@ -19,14 +20,85 @@ def tokenizer_kwargs_for_model(model_name, model_id):
     return kwargs
 
 
-def model_kwargs_for_model(model_name, model_id, device):
+def _dtype_from_name(value, default=torch.bfloat16):
+    if value is None:
+        return default
+    normalized = str(value).lower()
+    if normalized in {"auto", "none"}:
+        return "auto" if normalized == "auto" else None
+    if normalized in {"bf16", "bfloat16"}:
+        return torch.bfloat16
+    if normalized in {"fp16", "float16", "16bit"}:
+        return torch.float16
+    if normalized in {"fp32", "float32", "32bit"}:
+        return torch.float32
+    raise ValueError(f"Unsupported dtype: {value}")
+
+
+def _bitsandbytes_config(loading_config):
+    quantization = str(loading_config.get("quantization", "none")).lower()
+    if quantization in {"none", "no", "false", "0", "16bit", "bf16", "fp16"}:
+        return None
+
+    try:
+        from transformers import BitsAndBytesConfig
+    except ImportError as exc:
+        raise ImportError(
+            "Transformers BitsAndBytesConfig is required for quantized model loading. "
+            "Install dependencies with `uv sync`."
+        ) from exc
+
+    if quantization in {"8bit", "int8", "8"}:
+        try:
+            return BitsAndBytesConfig(
+                load_in_8bit=True,
+                llm_int8_enable_fp32_cpu_offload=bool(
+                    loading_config.get("llm_int8_enable_fp32_cpu_offload", False)
+                ),
+            )
+        except PackageNotFoundError as exc:
+            raise ModuleNotFoundError(
+                "bitsandbytes is required for 8bit model loading. Run `uv sync` "
+                "after updating pyproject.toml."
+            ) from exc
+
+    if quantization in {"4bit", "nf4", "int4", "4"}:
+        try:
+            return BitsAndBytesConfig(
+                load_in_4bit=True,
+                bnb_4bit_compute_dtype=_dtype_from_name(
+                    loading_config.get("compute_dtype", loading_config.get("dtype", "bfloat16"))
+                ),
+                bnb_4bit_quant_type=str(loading_config.get("quant_type", "nf4")),
+                bnb_4bit_use_double_quant=bool(loading_config.get("double_quant", True)),
+            )
+        except PackageNotFoundError as exc:
+            raise ModuleNotFoundError(
+                "bitsandbytes is required for 4bit model loading. Run `uv sync` "
+                "after updating pyproject.toml."
+            ) from exc
+
+    raise ValueError(f"Unsupported quantization mode: {loading_config.get('quantization')}")
+
+
+def model_kwargs_for_model(model_name, model_id, device, loading_config=None):
+    loading_config = loading_config or {}
     model_key = _model_key(model_name, model_id)
+    quantization_config = _bitsandbytes_config(loading_config)
+    dtype = _dtype_from_name(loading_config.get("dtype", "bfloat16"))
+    device_map = loading_config.get("device_map")
+    if device_map is None:
+        device_map = "auto" if quantization_config is not None else device
+
     kwargs = {
-        "torch_dtype": torch.bfloat16,
-        "device_map": device,
+        "device_map": device_map,
         "trust_remote_code": True,
         "attn_implementation": "eager",
     }
+    if dtype is not None:
+        kwargs["torch_dtype"] = dtype
+    if quantization_config is not None:
+        kwargs["quantization_config"] = quantization_config
 
     # DeepSeek-V2-Lite ships older remote modeling code that calls the removed
     # DynamicCache.get_usable_length API. Current Transformers has a native

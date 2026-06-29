@@ -163,6 +163,7 @@ class Phase2Writer:
                 "layers": layers,
                 "heads": heads,
                 "params_json": _json(model_config.get("params", {})),
+                "model_loading_json": _json(model_config.get("model_loading", {})),
             }
         )
 

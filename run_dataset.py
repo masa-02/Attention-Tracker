@@ -362,6 +362,7 @@ def main(args):
         write_json(audit_run_dir / "summary.json", {
             "model": model_name,
             "model_id": model_config["model_info"]["model_id"],
+            "model_loading": model_config.get("model_loading", {}),
             "config_path": str(config_path),
             "dataset_name": dataset_name,
             "seed": seed,
