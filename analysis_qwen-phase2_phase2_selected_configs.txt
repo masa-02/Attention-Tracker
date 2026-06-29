@@ -1,2 +1,9 @@
 configs/runtime/qwen2.5-7b-instruct.yml
 configs/runtime/qwen2.5-14b-instruct.yml
+configs/runtime/qwen2.5-32b-instruct.yml
+configs/runtime/qwen2.5-coder-7b-instruct.yml
+configs/runtime/qwen2.5-coder-14b-instruct.yml
+configs/runtime/qwen2.5-coder-32b-instruct.yml
+configs/runtime/qwen3-8b.yml
+configs/runtime/qwen3-14b.yml
+configs/runtime/qwen3-32b.yml

@@ -12,7 +12,79 @@ model_loading:
 params:
   temperature: 0.1
   max_output_tokens: 32
-  important_heads: []
+  important_heads:
+  - - 12
+    - 62
+  - - 14
+    - 49
+  - - 17
+    - 54
+  - - 20
+    - 40
+  - - 20
+    - 43
+  - - 21
+    - 24
+  - - 21
+    - 28
+  - - 21
+    - 38
+  - - 21
+    - 57
+  - - 21
+    - 60
+  - - 22
+    - 15
+  - - 22
+    - 49
+  - - 24
+    - 39
+  - - 24
+    - 40
+  - - 24
+    - 43
+  - - 25
+    - 53
+  - - 26
+    - 22
+  - - 26
+    - 23
+  - - 28
+    - 41
+  - - 28
+    - 44
+  - - 36
+    - 50
+  - - 39
+    - 15
+  - - 39
+    - 25
+  - - 40
+    - 55
+  - - 41
+    - 57
+  - - 44
+    - 40
+  - - 44
+    - 44
+  - - 45
+    - 25
+  - - 45
+    - 28
+  - - 45
+    - 31
+  - - 45
+    - 57
+  - - 45
+    - 60
+  - - 47
+    - 12
+  - - 48
+    - 28
+  - - 48
+    - 40
+  - - 49
+    - 25
 runtime:
   dataset_name: deepset/prompt-injections
   seed: 0
@@ -22,15 +94,13 @@ audit:
   enabled: true
   run_id: qwen3-32b-phase1
   audit_dir: null
-  attention_summary: false   # set true to write full [L,H] attention arrays (attention_summary.npz)
+  attention_summary: false
 head_selection:
   dataset: llm
   num_data: 30
   select_k: 4
   update_config: false
-
 phase2:
   enabled: false
   output_dir: outputs/phase2
   strict_spans: true
-

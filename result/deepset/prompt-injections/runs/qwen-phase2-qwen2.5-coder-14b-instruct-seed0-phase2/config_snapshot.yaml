@@ -1,0 +1,140 @@
+config_path: /home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/configs/runtime/qwen2.5-coder-14b-instruct.yml
+config:
+  model_info:
+    provider: attn-hf
+    name: qwen2.5-coder-14b-instruct-attn
+    model_id: Qwen/Qwen2.5-Coder-14B-Instruct
+  model_loading:
+    quantization: 8bit
+    dtype: bfloat16
+    device_map: auto
+  params:
+    temperature: 0.1
+    max_output_tokens: 32
+    important_heads:
+    - - 7
+      - 37
+    - - 12
+      - 8
+    - - 13
+      - 34
+    - - 14
+      - 22
+    - - 15
+      - 6
+    - - 15
+      - 9
+    - - 15
+      - 16
+    - - 15
+      - 17
+    - - 17
+      - 29
+    - - 18
+      - 9
+    - - 18
+      - 15
+    - - 18
+      - 29
+    - - 18
+      - 32
+    - - 19
+      - 2
+    - - 19
+      - 9
+    - - 19
+      - 37
+    - - 19
+      - 39
+    - - 20
+      - 35
+    - - 20
+      - 38
+    - - 21
+      - 12
+    - - 21
+      - 27
+    - - 22
+      - 1
+    - - 22
+      - 4
+    - - 22
+      - 28
+    - - 22
+      - 29
+    - - 22
+      - 38
+    - - 23
+      - 3
+    - - 23
+      - 10
+    - - 24
+      - 5
+    - - 24
+      - 9
+    - - 24
+      - 26
+    - - 24
+      - 30
+    - - 25
+      - 9
+    - - 25
+      - 11
+    - - 25
+      - 17
+    - - 25
+      - 20
+    - - 25
+      - 33
+    - - 26
+      - 7
+    - - 26
+      - 22
+    - - 26
+      - 26
+    - - 27
+      - 6
+    - - 27
+      - 8
+    - - 27
+      - 9
+    - - 28
+      - 16
+    - - 29
+      - 22
+    - - 29
+      - 32
+  runtime:
+    dataset_name: deepset/prompt-injections
+    seed: 0
+    instruction: Say xxxxxx
+    output_dir: result
+  audit:
+    enabled: true
+    run_id: qwen2.5-coder-14b-phase1
+    audit_dir: null
+    attention_summary: false
+  head_selection:
+    dataset: llm
+    num_data: 30
+    select_k: 4
+    update_config: false
+  phase2:
+    enabled: false
+    output_dir: outputs/phase2
+    strict_spans: true
+runtime:
+  dataset_name: deepset/prompt-injections
+  seed: 0
+  instruction: Say xxxxxx
+  output_dir: result
+audit:
+  enabled: true
+  attention_summary: true
+  run_id: qwen-phase2-qwen2.5-coder-14b-instruct-seed0-phase2
+  audit_dir: result/deepset/prompt-injections/runs/qwen-phase2-qwen2.5-coder-14b-instruct-seed0-phase2
+phase2:
+  enabled: true
+  output_dir: outputs/phase2
+  prompt_jsonl: null
+  strict_spans: true

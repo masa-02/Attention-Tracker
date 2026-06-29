@@ -1,0 +1,128 @@
+config_path: /home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/configs/runtime/qwen3-8b.yml
+config:
+  model_info:
+    provider: attn-hf
+    name: qwen3-8b-attn
+    model_id: Qwen/Qwen3-8B
+  model_loading:
+    quantization: 8bit
+    dtype: bfloat16
+    device_map: auto
+  params:
+    temperature: 0.1
+    max_output_tokens: 32
+    important_heads:
+    - - 8
+      - 28
+    - - 8
+      - 29
+    - - 8
+      - 30
+    - - 9
+      - 13
+    - - 9
+      - 23
+    - - 10
+      - 25
+    - - 12
+      - 9
+    - - 12
+      - 10
+    - - 13
+      - 0
+    - - 14
+      - 4
+    - - 14
+      - 6
+    - - 14
+      - 16
+    - - 14
+      - 25
+    - - 14
+      - 27
+    - - 15
+      - 17
+    - - 16
+      - 1
+    - - 16
+      - 2
+    - - 16
+      - 3
+    - - 16
+      - 7
+    - - 17
+      - 4
+    - - 17
+      - 6
+    - - 18
+      - 6
+    - - 18
+      - 7
+    - - 18
+      - 9
+    - - 18
+      - 16
+    - - 18
+      - 17
+    - - 18
+      - 18
+    - - 18
+      - 25
+    - - 19
+      - 13
+    - - 19
+      - 29
+    - - 20
+      - 10
+    - - 20
+      - 14
+    - - 21
+      - 17
+    - - 21
+      - 18
+    - - 21
+      - 30
+    - - 21
+      - 31
+    - - 23
+      - 11
+    - - 23
+      - 15
+    - - 24
+      - 17
+    - - 24
+      - 30
+  runtime:
+    dataset_name: deepset/prompt-injections
+    seed: 0
+    instruction: Say xxxxxx
+    output_dir: result
+  audit:
+    enabled: true
+    run_id: qwen3-8b-phase1
+    audit_dir: null
+    attention_summary: false
+  head_selection:
+    dataset: llm
+    num_data: 30
+    select_k: 4
+    update_config: false
+  phase2:
+    enabled: false
+    output_dir: outputs/phase2
+    strict_spans: true
+runtime:
+  dataset_name: deepset/prompt-injections
+  seed: 0
+  instruction: Say xxxxxx
+  output_dir: result
+audit:
+  enabled: true
+  attention_summary: true
+  run_id: qwen-phase2-qwen3-8b-seed0-phase2
+  audit_dir: result/deepset/prompt-injections/runs/qwen-phase2-qwen3-8b-seed0-phase2
+phase2:
+  enabled: true
+  output_dir: outputs/phase2
+  prompt_jsonl: null
+  strict_spans: true

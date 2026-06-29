@@ -1,0 +1,52 @@
+{
+  "model": "qwen2.5-7b-instruct-attn",
+  "model_id": "Qwen/Qwen2.5-7B-Instruct",
+  "model_loading": {
+    "quantization": "8bit",
+    "dtype": "bfloat16",
+    "device_map": "auto"
+  },
+  "config_path": "/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/configs/runtime/qwen2.5-7b-instruct.yml",
+  "dataset_name": "deepset/prompt-injections",
+  "seed": 0,
+  "instruction": "Say xxxxxx",
+  "run_id": "qwen-phase2-qwen2.5-7b-instruct-seed0-phase2",
+  "num_samples": 116,
+  "metrics": {
+    "auc": 0.974,
+    "auprc": 0.98,
+    "fnr": 0.1,
+    "fpr": 0.071
+  },
+  "legacy_result_path": "result/deepset/prompt-injections/qwen2.5-7b-instruct-attn-0.json",
+  "legacy_summary_path": "result/deepset/prompt-injections/result.jsonl",
+  "samples_path": "result/deepset/prompt-injections/runs/qwen-phase2-qwen2.5-7b-instruct-seed0-phase2/samples.jsonl",
+  "attention_summary": {
+    "path": "result/deepset/prompt-injections/runs/qwen-phase2-qwen2.5-7b-instruct-seed0-phase2/attention_summary.npz",
+    "metrics": [
+      "instruction_mass",
+      "data_mass",
+      "ratio",
+      "entropy"
+    ],
+    "shape": [
+      116,
+      28,
+      28
+    ],
+    "extraction_version": "at-attn-summary-v1"
+  },
+  "phase2": {
+    "run_dir": "outputs/phase2/qwen-phase2-qwen2.5-7b-instruct-seed0-phase2",
+    "prompts": 116,
+    "attention_summary_path": "outputs/phase2/qwen-phase2-qwen2.5-7b-instruct-seed0-phase2/attention_summary.safetensors",
+    "tables": [
+      "attention_tracker_scores.parquet",
+      "behavior_labels.parquet",
+      "generation_outputs.parquet",
+      "model_metadata.parquet",
+      "prompts.parquet",
+      "token_spans.parquet"
+    ]
+  }
+}
