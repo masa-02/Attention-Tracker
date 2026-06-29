@@ -32,10 +32,10 @@ Paper: https://arxiv.org/abs/2411.00348
    ```
 
 ### Usage
-1. Find important heads for the default models:
+1. Find important heads for the pilot model group:
 
    ```bash
-   ./scripts/find_heads.sh
+   ./scripts/groups/pilot/phase1.sh
    ```
 
 2. To manually specify important heads, edit `configs/model_configs/{model_name}_config.json` and update `["params"]["important_heads"]`.
@@ -43,7 +43,7 @@ Paper: https://arxiv.org/abs/2411.00348
 3. Run experiments on the [DeepSet Prompt Injection Dataset](https://huggingface.co/datasets/deepset/prompt-injections?row=19):
 
    ```bash
-   ./scripts/run_dataset.sh
+   ./scripts/groups/pilot/phase1.sh
    ```
 
 4. Test an individual query:
@@ -130,48 +130,41 @@ fails for that config so the list script can log `Skip ...` and continue.
 
 ### Experiment Scripts
 
-The scripts under `scripts/` are aligned with the Phase1 Attention Tracker workflow in
-`memo/official_implementation_experiment_procedure.md`.
+The scripts under `scripts/` are organized by responsibility:
+
+- `scripts/common/`: shared runners for manifest-based head selection, dataset evaluation, Phase1/Phase2 pipelines, smoke queries, and attention-map rendering.
+- `scripts/groups/<group>/`: thin model-group entry points that pin a manifest and call `scripts/common`.
 
 Run a single YAML-configured smoke query:
 
 ```bash
-./scripts/gate1_smoke_yaml.sh configs/runtime/qwen2.5-7b-instruct.yml qwen-smoke
+./scripts/common/smoke_query.sh configs/runtime/qwen2.5-7b-instruct.yml qwen-smoke
 ```
 
-The `gate1_*` script filenames are kept for compatibility with prior experiment notes;
-their run ids and documentation now use Phase1 terminology.
-
-Run the recommended Qwen Phase1 smoke path: head selection on a small synthetic set,
-then DeepSet evaluation with audit logs:
+Run a single YAML-configured Phase1 path, including attention-map rendering:
 
 ```bash
-./scripts/gate1_qwen_smoke.sh configs/runtime/qwen2.5-7b-instruct.yml qwen-phase1-smoke 10 4 0
+./scripts/common/pipeline_single_config.sh configs/runtime/qwen2.5-7b-instruct.yml qwen-phase1
 ```
 
-Run the full YAML-configured Phase1 path, including attention-map rendering:
+Run a model-group Phase1 pipeline. This first runs head selection and writes selected
+heads back to each YAML config by default, then runs DeepSet evaluation with audit logs.
+If head selection fails for one config, for example because of GPU memory exhaustion,
+that config is skipped and the next config continues.
 
 ```bash
-./scripts/gate1_pipeline_yaml.sh configs/runtime/qwen2.5-7b-instruct.yml qwen-phase1
+./scripts/groups/qwen/phase1.sh qwen-phase1
+./scripts/groups/llama/phase1.sh llama-phase1
+./scripts/groups/gemma/phase1.sh gemma-phase1
+./scripts/groups/core/phase1.sh core-phase1
 ```
 
-Run the same Phase1 path for a list of YAML configs. This first runs head selection
-and writes selected heads back to each YAML config by default, then runs DeepSet
-evaluation with audit logs. If head selection fails for one config, for example because
-of GPU memory exhaustion, that config is skipped and the next config continues. The
-pipeline evaluates only configs that completed head selection successfully.
+Run the Phase2 Attention Tracker pipeline for a model group:
 
 ```bash
-./scripts/gate1_pipeline_config_list.sh configs/runtime/manifests/pilot.txt pilot-phase1
+./scripts/groups/qwen/phase2.sh qwen-phase2
+./scripts/groups/core/phase2.sh core-phase2
 ```
-
-Run the Phase2 Attention Tracker pipeline for a config list:
-
-```bash
-./scripts/phase2_attention_config_list.sh configs/runtime/manifests/pilot.txt phase2-pilot
-```
-
-`scripts/gate2_attention_config_list.sh` remains as a compatibility wrapper for older notes.
 
 The manifest files under `configs/runtime/manifests/` group the experiment models:
 
@@ -180,34 +173,29 @@ The manifest files under `configs/runtime/manifests/` group the experiment model
 | `pilot.txt` | Small first-pass Phase1 run. |
 | `core.txt` | Main architecture comparison from the experiment plan. |
 | `qwen.txt` | Qwen size, dense/MoE, hybrid-version, and coder comparisons. |
+| `llama.txt` | Llama Instruct comparisons. |
 | `gemma.txt` | Gemma generation and dense/MoE comparisons. |
+| `mistral.txt` | Mistral Instruct comparisons. |
+| `deepseek.txt` | DeepSeek chat/instruct comparisons. |
+| `moonlight.txt` | Moonlight instruct run. |
 | `domain.txt` | General/code domain-adaptation comparisons. |
 | `all.txt` | All runtime YAML configs; includes large and gated models. |
 
 For manual staged execution, use:
 
 ```bash
-./scripts/select_config_list_heads.sh configs/runtime/manifests/core.txt llm 30 4
-./scripts/run_config_list_dataset.sh configs/runtime/manifests/core.txt deepset/prompt-injections 0
+./scripts/common/select_heads.sh configs/runtime/manifests/core.txt llm 30 4 analysis_core_phase1_heads.txt core-phase1 analysis_core_phase1_selected.txt
+./scripts/common/run_dataset.sh analysis_core_phase1_selected.txt deepset/prompt-injections 0 analysis_core_phase1_dataset.txt core-phase1
 ```
 
-Both list scripts accept an optional final run-prefix argument, which is included in
-audit `run_id` values. `select_config_list_heads.sh` also accepts an optional success
-manifest path. When provided, it writes only configs that finished head selection:
+`select_heads.sh` writes only configs that finished head selection when a success
+manifest path is provided. `run_dataset.sh` also skips configs whose
+`params.important_heads` is empty, so a failed or not-yet-run head selection does not
+trigger a model load.
 
 ```bash
-./scripts/select_config_list_heads.sh configs/runtime/manifests/core.txt llm 30 4 analysis_core_heads.txt core-phase1 analysis_core_selected.txt
-./scripts/run_config_list_dataset.sh analysis_core_selected.txt deepset/prompt-injections 0 analysis_core_dataset.txt core-phase1
-```
-
-`run_config_list_dataset.sh` also skips configs whose `params.important_heads` is empty,
-so a failed or not-yet-run head selection does not trigger a model load.
-
-Family scripts still accept positional arguments, but now also write audit logs:
-
-```bash
-./scripts/find_qwen_family_heads.sh llm 30 analysis_qwen_family.txt 4
-./scripts/run_qwen_family_dataset.sh deepset/prompt-injections 0
+./scripts/common/pipeline_config_list.sh phase1 configs/runtime/manifests/core.txt core-phase1
+./scripts/common/pipeline_config_list.sh phase2 configs/runtime/manifests/core.txt core-phase2
 ```
 
 ### Important Head Selection
@@ -256,7 +244,7 @@ The Llama family configs are:
 Find and write important heads:
 
 ```bash
-./scripts/find_llama_family_heads.sh [dataset] [num_data] [output_file] [select_k]
+./scripts/groups/llama/select_heads.sh [dataset] [num_data] [output_file] [select_k]
 ```
 
 Defaults:
@@ -271,7 +259,7 @@ Defaults:
 Render attention map figures:
 
 ```bash
-./scripts/plot_llama_family_attention_maps.sh [dataset] [num_data] [output_dir]
+./scripts/groups/llama/render_attention_maps.sh [dataset] [num_data] [output_dir]
 ```
 
 Defaults are `dataset=deepset`, `num_data=100`, and `output_dir=render/outputs/llama_family`.
@@ -279,7 +267,7 @@ Defaults are `dataset=deepset`, `num_data=100`, and `output_dir=render/outputs/l
 Run dataset evaluation:
 
 ```bash
-./scripts/run_llama_family_dataset.sh [dataset_name] [seed]
+./scripts/groups/llama/run_dataset.sh [dataset_name] [seed]
 ```
 
 Defaults are `dataset_name=deepset/prompt-injections` and `seed=0`. Models whose `important_heads` are empty are skipped.
@@ -308,7 +296,7 @@ The Qwen family configs are:
 Find and write important heads:
 
 ```bash
-./scripts/find_qwen_family_heads.sh [dataset] [num_data] [output_file] [select_k]
+./scripts/groups/qwen/select_heads.sh [dataset] [num_data] [output_file] [select_k]
 ```
 
 Defaults:
@@ -323,7 +311,7 @@ Defaults:
 Render attention map figures:
 
 ```bash
-./scripts/plot_qwen_family_attention_maps.sh [dataset] [num_data] [output_dir]
+./scripts/groups/qwen/render_attention_maps.sh [dataset] [num_data] [output_dir]
 ```
 
 Defaults are `dataset=deepset`, `num_data=100`, and `output_dir=render/outputs/qwen_family`.
@@ -331,7 +319,7 @@ Defaults are `dataset=deepset`, `num_data=100`, and `output_dir=render/outputs/q
 Run dataset evaluation:
 
 ```bash
-./scripts/run_qwen_family_dataset.sh [dataset_name] [seed]
+./scripts/groups/qwen/run_dataset.sh [dataset_name] [seed]
 ```
 
 Defaults are `dataset_name=deepset/prompt-injections` and `seed=0`. Models whose `important_heads` are empty are skipped.
@@ -341,7 +329,7 @@ Defaults are `dataset_name=deepset/prompt-injections` and `seed=0`. Models whose
 Render paper-style attention maps for one or more models:
 
 ```bash
-./scripts/plot_attention_maps.sh [model_name|all] [dataset] [num_data] [output_dir]
+uv run python render/plot_attention_maps.py --model_name [model_name|all] --dataset [llm|deepset] --num_data [num_data] --output_dir [output_dir]
 ```
 
 Defaults are `model_name=all`, `dataset=deepset`, `num_data=100`, and `output_dir=render/outputs`. Outputs are written under `output_dir/{model_name}` and include:

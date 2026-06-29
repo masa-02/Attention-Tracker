@@ -1,0 +1,2 @@
+# Moonlight instruct model set.
+configs/runtime/moonlight-16b-a3b-instruct.yml

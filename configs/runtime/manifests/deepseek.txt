@@ -1,0 +1,3 @@
+# DeepSeek chat/instruct model set.
+configs/runtime/deepseek-v2-lite-chat.yml
+configs/runtime/deepseek-coder-v2-lite-instruct.yml
