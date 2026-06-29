@@ -4,3 +4,7 @@
 # /result
 
 analysis.txt
+
+# env
+/.venv
+/.venv/
