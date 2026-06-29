@@ -19,14 +19,15 @@ class AttentionModel(Model):
         self.name = config["model_info"]["name"]
         self.max_output_tokens = int(config["params"]["max_output_tokens"])
         model_id = config["model_info"]["model_id"]
+        loading_config = config.get("model_loading", {})
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_id,
-            **tokenizer_kwargs_for_model(self.name, model_id),
+            **tokenizer_kwargs_for_model(self.name, model_id, loading_config),
         )
         model_class = causal_model_class_for_model(self.name, model_id)
         self.model = model_class.from_pretrained(
             model_id,
-            **model_kwargs_for_model(self.name, model_id, device, config.get("model_loading", {})),
+            **model_kwargs_for_model(self.name, model_id, device, loading_config),
         ).eval()
 
         self.top_k = 50

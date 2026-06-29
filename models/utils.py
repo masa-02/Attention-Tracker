@@ -7,9 +7,19 @@ def _model_key(model_name, model_id):
     return f"{model_name} {model_id}".lower()
 
 
-def tokenizer_kwargs_for_model(model_name, model_id):
+def _hub_kwargs_from_loading_config(loading_config):
+    loading_config = loading_config or {}
+    kwargs = {}
+    for key in ("cache_dir", "local_files_only", "revision", "token"):
+        if key in loading_config and loading_config[key] is not None:
+            kwargs[key] = loading_config[key]
+    return kwargs
+
+
+def tokenizer_kwargs_for_model(model_name, model_id, loading_config=None):
     model_key = _model_key(model_name, model_id)
     kwargs = {"trust_remote_code": True}
+    kwargs.update(_hub_kwargs_from_loading_config(loading_config))
 
     if "mistral" in model_key:
         kwargs["fix_mistral_regex"] = True
@@ -95,8 +105,9 @@ def model_kwargs_for_model(model_name, model_id, device, loading_config=None):
         "trust_remote_code": True,
         "attn_implementation": "eager",
     }
+    kwargs.update(_hub_kwargs_from_loading_config(loading_config))
     if dtype is not None:
-        kwargs["torch_dtype"] = dtype
+        kwargs["dtype"] = dtype
     if quantization_config is not None:
         kwargs["quantization_config"] = quantization_config
 

@@ -35,5 +35,5 @@ has_important_heads() {
 }
 
 skip_hint() {
-    printf '%s' "Check GPU memory, HF access, model id availability, span mapping, dataset availability, and model-specific attention support."
+    printf '%s' "Check GPU memory, HF access, HF download/cache state, model id availability, span mapping, dataset availability, and model-specific attention support."
 }
