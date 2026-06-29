@@ -85,6 +85,21 @@ model_loading:
   double_quant: true
 ```
 
+For machines with a shared or pre-populated HF cache, add:
+
+```yaml
+model_loading:
+  quantization: 8bit
+  dtype: bfloat16
+  device_map: auto
+  cache_dir: /path/to/hf-cache
+  local_files_only: false
+```
+
+If a model has already been downloaded and you want to avoid network access during the
+experiment, set `local_files_only: true`. A missing cache then fails immediately instead
+of hanging during shard download.
+
 Quantized runs require bitsandbytes:
 
 ```bash
@@ -93,6 +108,14 @@ uv sync
 
 For controlled comparisons, rerun head selection after changing quantization. Treat
 quantized and non-quantized results as separate experimental conditions.
+
+If a run stops while `Fetching ... files` from Hugging Face, the failure happened before
+quantized model loading. Check HF authentication, network/proxy access, free disk space,
+and the HF cache location. You can prefetch a model on the L4 machine with:
+
+```bash
+uv run huggingface-cli download Qwen/Qwen2.5-14B-Instruct
+```
 
 CLI arguments override YAML values. For example, this runs the same YAML config with a
 different seed and run id:
