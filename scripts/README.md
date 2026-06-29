@@ -10,6 +10,7 @@ Use `scripts/common/` for reusable runners and `scripts/groups/<group>/` for exp
 - `common/pipeline_single_config.sh`: run head selection, dataset evaluation, and attention-map rendering for one YAML config.
 - `common/render_config_list.sh`: render attention maps for every config in a manifest.
 - `common/smoke_query.sh`: run one query with `run.py`.
+- `common/cleanup_hf_cache.py`: remove the Hugging Face cache entry for one config's model.
 
 ## Model Groups
 
@@ -37,3 +38,5 @@ Examples:
 ```
 
 Keep new experiment entry points under `groups/<group>/`. Put only reusable implementation in `common/`.
+
+`groups/*/phase*.sh` uses `common/pipeline_config_list.sh`, which streams one config at a time and sets `ATTN_TRACKER_CLEAN_HF_CACHE=always` by default. This removes the current model's HF cache after success or failure. Override with `never`, `on_failure`, `on_success`, or `always`.

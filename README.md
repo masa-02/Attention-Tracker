@@ -117,6 +117,31 @@ and the HF cache location. You can prefetch a model on the L4 machine with:
 uv run huggingface-cli download Qwen/Qwen2.5-14B-Instruct
 ```
 
+Group pipelines run each config end-to-end and clean that model's HF cache by default
+after success or failure, so a Google Cloud disk does not accumulate every model in a
+large manifest. Override the policy when needed:
+
+```bash
+# default for scripts/groups/*/phase*.sh
+ATTN_TRACKER_CLEAN_HF_CACHE=always ./scripts/groups/qwen/phase2.sh qwen-phase2
+
+# keep cache for reruns
+ATTN_TRACKER_CLEAN_HF_CACHE=never ./scripts/groups/qwen/phase2.sh qwen-phase2
+
+# clean only partial/failed downloads
+ATTN_TRACKER_CLEAN_HF_CACHE=on_failure ./scripts/groups/qwen/phase2.sh qwen-phase2
+
+# inspect what would be removed
+ATTN_TRACKER_CLEAN_HF_CACHE=always ATTN_TRACKER_CLEAN_HF_CACHE_DRY_RUN=1 ./scripts/groups/qwen/phase2.sh qwen-phase2
+```
+
+Manual cleanup for one config:
+
+```bash
+uv run python scripts/common/cleanup_hf_cache.py --config configs/runtime/qwen2.5-14b-instruct.yml --dry-run
+uv run python scripts/common/cleanup_hf_cache.py --config configs/runtime/qwen2.5-14b-instruct.yml
+```
+
 CLI arguments override YAML values. For example, this runs the same YAML config with a
 different seed and run id:
 

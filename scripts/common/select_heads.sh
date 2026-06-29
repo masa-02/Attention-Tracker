@@ -64,6 +64,7 @@ while IFS= read -r CONFIG || [[ -n "${CONFIG}" ]]; do
         "${PHASE_ARGS[@]}" \
         --run-id "${RUN_ID}" >> "${OUTPUT_FILE}" 2>&1; then
         echo "Skip ${CONFIG}: ${PHASE} head selection failed. $(skip_hint)" >> "${OUTPUT_FILE}"
+        cleanup_hf_cache_for_config "${CONFIG}" "failure" "${OUTPUT_FILE}"
         continue
     fi
 
@@ -71,7 +72,9 @@ while IFS= read -r CONFIG || [[ -n "${CONFIG}" ]]; do
         if [[ -n "${SUCCESS_FILE}" ]]; then
             echo "${CONFIG}" >> "${SUCCESS_FILE}"
         fi
+        cleanup_hf_cache_for_config "${CONFIG}" "success" "${OUTPUT_FILE}"
     else
         echo "Skip ${CONFIG}: head selection completed but important_heads is still empty." >> "${OUTPUT_FILE}"
+        cleanup_hf_cache_for_config "${CONFIG}" "failure" "${OUTPUT_FILE}"
     fi
 done < "${LIST_FILE}"

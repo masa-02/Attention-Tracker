@@ -52,6 +52,8 @@ while IFS= read -r CONFIG || [[ -n "${CONFIG}" ]]; do
         "${PHASE_ARGS[@]}" \
         --run-id "${RUN_ID}" >> "${OUTPUT_FILE}" 2>&1; then
         echo "Skip ${CONFIG}: ${PHASE} dataset evaluation failed. $(skip_hint)" >> "${OUTPUT_FILE}"
+        cleanup_hf_cache_for_config "${CONFIG}" "failure" "${OUTPUT_FILE}"
         continue
     fi
+    cleanup_hf_cache_for_config "${CONFIG}" "success" "${OUTPUT_FILE}"
 done < "${LIST_FILE}"

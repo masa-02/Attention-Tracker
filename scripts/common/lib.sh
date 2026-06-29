@@ -37,3 +37,48 @@ has_important_heads() {
 skip_hint() {
     printf '%s' "Check GPU memory, HF access, HF download/cache state, model id availability, span mapping, dataset availability, and model-specific attention support."
 }
+
+cleanup_hf_cache_for_config() {
+    local config="$1"
+    local reason="$2"
+    local output_file="$3"
+    local policy="${ATTN_TRACKER_CLEAN_HF_CACHE:-never}"
+    local should_cleanup="false"
+
+    case "${policy}" in
+        always|true|1|yes)
+            should_cleanup="true"
+            ;;
+        on_success)
+            if [[ "${reason}" == "success" ]]; then
+                should_cleanup="true"
+            fi
+            ;;
+        on_failure)
+            if [[ "${reason}" == "failure" ]]; then
+                should_cleanup="true"
+            fi
+            ;;
+        never|false|0|no|"")
+            should_cleanup="false"
+            ;;
+        *)
+            echo "Warning: unknown ATTN_TRACKER_CLEAN_HF_CACHE='${policy}', skip cache cleanup." >> "${output_file}"
+            should_cleanup="false"
+            ;;
+    esac
+
+    if [[ "${should_cleanup}" != "true" ]]; then
+        return 0
+    fi
+
+    local cleanup_args=(--config "${config}")
+    if [[ "${ATTN_TRACKER_CLEAN_HF_CACHE_DRY_RUN:-0}" == "1" ]]; then
+        cleanup_args+=(--dry-run)
+    fi
+
+    echo "===== HF cache cleanup (${reason}): ${config} =====" >> "${output_file}"
+    if ! uv run python -u scripts/common/cleanup_hf_cache.py "${cleanup_args[@]}" >> "${output_file}" 2>&1; then
+        echo "Warning: HF cache cleanup failed for ${config}" >> "${output_file}"
+    fi
+}
