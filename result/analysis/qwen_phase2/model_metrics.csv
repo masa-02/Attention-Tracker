@@ -1,0 +1,10 @@
+run_id,model,display_model,model_id,model_group,params_b,num_samples,layers,heads,quantization,dtype,auc,auprc,fpr,fnr,selected_heads,selected_fraction,selected_depth_mean
+qwen-phase2-qwen2.5-7b-instruct-seed0-phase2,qwen2.5-7b-instruct-attn,qwen2.5-7b-instruct,Qwen/Qwen2.5-7B-Instruct,Qwen2.5,7.0,116,28,28,8bit,bfloat16,0.974,0.98,0.071,0.1,24,0.030612244897959183,0.5030864197530863
+qwen-phase2-qwen2.5-14b-instruct-seed0-phase2,qwen2.5-14b-instruct-attn,qwen2.5-14b-instruct,Qwen/Qwen2.5-14B-Instruct,Qwen2.5,14.0,116,48,40,8bit,bfloat16,0.989,0.99,0.286,0.0,61,0.03177083333333333,0.3983257760725497
+qwen-phase2-qwen2.5-32b-instruct-seed0-phase2,qwen2.5-32b-instruct-attn,qwen2.5-32b-instruct,Qwen/Qwen2.5-32B-Instruct,Qwen2.5,32.0,116,64,40,4bit,bfloat16,0.99,0.991,0.464,0.0,115,0.044921875,0.5164941338854383
+qwen-phase2-qwen2.5-coder-7b-instruct-seed0-phase2,qwen2.5-coder-7b-instruct-attn,qwen2.5-coder-7b-instruct,Qwen/Qwen2.5-Coder-7B-Instruct,Qwen2.5-Coder,7.0,116,28,28,8bit,bfloat16,0.99,0.992,0.196,0.017,28,0.03571428571428571,0.44841269841269843
+qwen-phase2-qwen2.5-coder-14b-instruct-seed0-phase2,qwen2.5-coder-14b-instruct-attn,qwen2.5-coder-14b-instruct,Qwen/Qwen2.5-Coder-14B-Instruct,Qwen2.5-Coder,14.0,116,48,40,8bit,bfloat16,0.988,0.99,0.679,0.0,46,0.023958333333333335,0.45097132284921354
+qwen-phase2-qwen2.5-coder-32b-instruct-seed0-phase2,qwen2.5-coder-32b-instruct-attn,qwen2.5-coder-32b-instruct,Qwen/Qwen2.5-Coder-32B-Instruct,Qwen2.5-Coder,32.0,116,64,40,4bit,bfloat16,0.952,0.962,0.536,0.017,118,0.04609375,0.6183750336292708
+qwen-phase2-qwen3-8b-seed0-phase2,qwen3-8b-attn,qwen3-8b,Qwen/Qwen3-8B,Qwen3,8.0,116,36,32,8bit,bfloat16,0.981,0.986,0.179,0.033,40,0.034722222222222224,0.4671428571428571
+qwen-phase2-qwen3-14b-seed0-phase2,qwen3-14b-attn,qwen3-14b,Qwen/Qwen3-14B,Qwen3,14.0,116,40,40,8bit,bfloat16,0.999,0.999,0.036,0.0,63,0.039375,0.4782254782254784
+qwen-phase2-qwen3-32b-seed0-phase2,qwen3-32b-attn,qwen3-32b,Qwen/Qwen3-32B,Qwen3,32.0,116,64,64,4bit,bfloat16,1.0,1.0,0.0,0.05,36,0.0087890625,0.5013227513227514
