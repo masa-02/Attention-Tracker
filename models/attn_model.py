@@ -208,14 +208,6 @@ class AttentionModel(Model):
                 generated_probs.append(probs[0, next_token_id.item()].item())
                 generated_tokens.append(next_token_id.item())
 
-                if next_token_id.item() == self.tokenizer.eos_token_id:
-                    break
-
-                input_ids = torch.cat(
-                    (input_ids, next_token_id.unsqueeze(0).unsqueeze(0)), dim=-1)
-                attention_mask = torch.cat(
-                    (attention_mask, torch.tensor([[1]], device=input_ids.device)), dim=-1)
-
                 nonfinite_attention_count += sum(
                     int((~torch.isfinite(attention)).sum().item())
                     for attention in output['attentions']
@@ -226,6 +218,14 @@ class AttentionModel(Model):
                     attention, nan=0.0) for attention in attention_map]
                 attention_map = get_last_attn(attention_map)
                 attention_maps.append(attention_map)
+
+                if next_token_id.item() == self.tokenizer.eos_token_id:
+                    break
+
+                input_ids = torch.cat(
+                    (input_ids, next_token_id.unsqueeze(0).unsqueeze(0)), dim=-1)
+                attention_mask = torch.cat(
+                    (attention_mask, torch.tensor([[1]], device=input_ids.device)), dim=-1)
 
         output_tokens = [self.tokenizer.decode(
             token, skip_special_tokens=True) for token in generated_tokens]
