@@ -1,0 +1,31 @@
+===== phase2 head selection: configs/runtime/deepseek-v2-lite-chat.yml =====
+`rope_scaling`'s factor field must be a float >= 1, got 40
+`rope_scaling`'s beta_fast field must be a float, got 32
+`rope_scaling`'s beta_slow field must be a float, got 1
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files:  25%|██▌       | 1/4 [02:50<08:32, 170.96s/it]Fetching 4 files: 100%|██████████| 4/4 [02:51<00:00, 42.76s/it] 
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:42<02:07, 42.61s/it]Skip configs/runtime/deepseek-v2-lite-chat.yml: phase2 head selection failed. Check GPU memory, HF access, HF download/cache state, model id availability, span mapping, dataset availability, and model-specific attention support.
+===== HF cache cleanup (failure): configs/runtime/deepseek-v2-lite-chat.yml =====
+HF cache cleanup for deepseek-ai/DeepSeek-V2-Lite-Chat (/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/configs/runtime/deepseek-v2-lite-chat.yml)
+  removed: /mnt/disks/data/huggingface_cache/models--deepseek-ai--DeepSeek-V2-Lite-Chat
+  removed: /mnt/disks/data/huggingface_cache/.locks/models--deepseek-ai--DeepSeek-V2-Lite-Chat
+  missing: /mnt/disks/data/huggingface_home/hub/models--deepseek-ai--DeepSeek-V2-Lite-Chat
+  missing: /mnt/disks/data/huggingface_home/hub/.locks/models--deepseek-ai--DeepSeek-V2-Lite-Chat
+  missing: /home/mkoba/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-V2-Lite-Chat
+  missing: /home/mkoba/.cache/huggingface/hub/.locks/models--deepseek-ai--DeepSeek-V2-Lite-Chat
+===== phase2 head selection: configs/runtime/deepseek-coder-v2-lite-instruct.yml =====
+A new version of the following files was downloaded from https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct:
+- configuration_deepseek.py
+. Make sure to double-check they do not contain any added malicious code. To avoid downloading new versions of the code file, you can pin a revision.
+A new version of the following files was downloaded from https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct:
+- modeling_deepseek.py
+. Make sure to double-check they do not contain any added malicious code. To avoid downloading new versions of the code file, you can pin a revision.
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files:  25%|██▌       | 1/4 [02:50<08:32, 170.80s/it]Fetching 4 files: 100%|██████████| 4/4 [02:50<00:00, 42.71s/it] 
+Loading checkpoint shards:   0%|          | 0/4 [00:00<?, ?it/s]Loading checkpoint shards:  25%|██▌       | 1/4 [00:43<02:09, 43.02s/it]Skip configs/runtime/deepseek-coder-v2-lite-instruct.yml: phase2 head selection failed. Check GPU memory, HF access, HF download/cache state, model id availability, span mapping, dataset availability, and model-specific attention support.
+===== HF cache cleanup (failure): configs/runtime/deepseek-coder-v2-lite-instruct.yml =====
+HF cache cleanup for deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct (/home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/configs/runtime/deepseek-coder-v2-lite-instruct.yml)
+  removed: /mnt/disks/data/huggingface_cache/models--deepseek-ai--DeepSeek-Coder-V2-Lite-Instruct
+  removed: /mnt/disks/data/huggingface_cache/.locks/models--deepseek-ai--DeepSeek-Coder-V2-Lite-Instruct
+  missing: /mnt/disks/data/huggingface_home/hub/models--deepseek-ai--DeepSeek-Coder-V2-Lite-Instruct
+  missing: /mnt/disks/data/huggingface_home/hub/.locks/models--deepseek-ai--DeepSeek-Coder-V2-Lite-Instruct
+  missing: /home/mkoba/.cache/huggingface/hub/models--deepseek-ai--DeepSeek-Coder-V2-Lite-Instruct
+  missing: /home/mkoba/.cache/huggingface/hub/.locks/models--deepseek-ai--DeepSeek-Coder-V2-Lite-Instruct
