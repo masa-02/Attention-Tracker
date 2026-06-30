@@ -84,7 +84,8 @@ while IFS= read -r CONFIG || [[ -n "${CONFIG}" ]]; do
             echo "Skip ${CONFIG}: head selection completed but important_heads is still empty." >> "${SELECT_LOG}"
         fi
     else
-        echo "Skip ${CONFIG}: ${PHASE} head selection failed. $(skip_hint)" >> "${SELECT_LOG}"
+        EXIT_CODE="$?"
+        echo "Skip ${CONFIG}: ${PHASE} head selection failed with exit code ${EXIT_CODE}. $(skip_hint)" >> "${SELECT_LOG}"
     fi
 
     if [[ "${SELECT_OK}" != "true" ]]; then
@@ -106,7 +107,8 @@ while IFS= read -r CONFIG || [[ -n "${CONFIG}" ]]; do
         --run-id "${EVAL_RUN_ID}" >> "${EVAL_LOG}" 2>&1; then
         cleanup_hf_cache_for_config "${CONFIG}" "success" "${EVAL_LOG}"
     else
-        echo "Skip ${CONFIG}: ${PHASE} dataset evaluation failed. $(skip_hint)" >> "${EVAL_LOG}"
+        EXIT_CODE="$?"
+        echo "Skip ${CONFIG}: ${PHASE} dataset evaluation failed with exit code ${EXIT_CODE}. $(skip_hint)" >> "${EVAL_LOG}"
         cleanup_hf_cache_for_config "${CONFIG}" "failure" "${EVAL_LOG}"
     fi
     CURRENT_CONFIG=""

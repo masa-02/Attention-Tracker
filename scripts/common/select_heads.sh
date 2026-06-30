@@ -54,7 +54,7 @@ while IFS= read -r CONFIG || [[ -n "${CONFIG}" ]]; do
         continue
     fi
 
-    if ! uv run python -u select_head.py \
+    if uv run python -u select_head.py \
         --config "${CONFIG}" \
         --dataset "${DATASET}" \
         --num_data "${NUM_DATA}" \
@@ -63,7 +63,10 @@ while IFS= read -r CONFIG || [[ -n "${CONFIG}" ]]; do
         --audit-log \
         "${PHASE_ARGS[@]}" \
         --run-id "${RUN_ID}" >> "${OUTPUT_FILE}" 2>&1; then
-        echo "Skip ${CONFIG}: ${PHASE} head selection failed. $(skip_hint)" >> "${OUTPUT_FILE}"
+        :
+    else
+        EXIT_CODE="$?"
+        echo "Skip ${CONFIG}: ${PHASE} head selection failed with exit code ${EXIT_CODE}. $(skip_hint)" >> "${OUTPUT_FILE}"
         cleanup_hf_cache_for_config "${CONFIG}" "failure" "${OUTPUT_FILE}"
         continue
     fi

@@ -9,6 +9,10 @@ model_loading:
   device_map: auto
   quant_type: nf4
   double_quant: true
+  low_cpu_mem_usage: true
+  offload_state_dict: true
+  use_safetensors: true
+  trust_remote_code: false
 params:
   temperature: 0.1
   max_output_tokens: 32

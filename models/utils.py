@@ -106,6 +106,15 @@ def model_kwargs_for_model(model_name, model_id, device, loading_config=None):
         "attn_implementation": "eager",
     }
     kwargs.update(_hub_kwargs_from_loading_config(loading_config))
+    for key in (
+        "low_cpu_mem_usage",
+        "offload_folder",
+        "offload_state_dict",
+        "max_memory",
+        "use_safetensors",
+    ):
+        if key in loading_config and loading_config[key] is not None:
+            kwargs[key] = loading_config[key]
     if dtype is not None:
         kwargs["dtype"] = dtype
     if quantization_config is not None:
@@ -116,6 +125,9 @@ def model_kwargs_for_model(model_name, model_id, device, loading_config=None):
     # DeepseekV2 implementation, so prefer it over trust_remote_code.
     if "deepseek-v2" in model_key or "deepseek_v2" in model_key:
         kwargs["trust_remote_code"] = False
+
+    if "trust_remote_code" in loading_config and loading_config["trust_remote_code"] is not None:
+        kwargs["trust_remote_code"] = bool(loading_config["trust_remote_code"])
 
     return kwargs
 
