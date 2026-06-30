@@ -136,7 +136,22 @@ def _process_phase2_sample(
     details["threshold"] = float(detector.threshold)
     detect = bool(details["focus_score"] <= details["threshold"])
     details["attention_summary"] = phase2_extractor.extract(attention_maps, spans)
-    details["trace"]["phase2_span_source"] = "strict_subsequence" if strict_spans else "legacy_trace"
+    if not details["attention_summary"]:
+        raise RuntimeError(
+            "Phase2 attention summary is empty for "
+            f"{record['example'].prompt_id}. The model returned no usable attention maps."
+        )
+    if strict_spans:
+        phase2_sources = {
+            spans[name].source
+            for name in ("system_instruction", "untrusted_data")
+            if name in spans
+        }
+        details["trace"]["phase2_span_source"] = (
+            ",".join(sorted(phase2_sources)) if phase2_sources else "strict_subsequence"
+        )
+    else:
+        details["trace"]["phase2_span_source"] = "legacy_trace"
     details["prediction"] = bool(detect)
 
     decoded_spans = {

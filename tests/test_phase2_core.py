@@ -85,7 +85,6 @@ def test_phase2_writer_optional_dependencies():
         "instruction_mass": np.ones((2, 3), dtype=np.float32),
         "data_mass": np.ones((2, 3), dtype=np.float32) * 2,
         "ratio": np.ones((2, 3), dtype=np.float32) / 3,
-        "normalized_instruction_ratio": np.ones((2, 3), dtype=np.float32) / 3,
         "entropy": np.zeros((2, 3), dtype=np.float32),
     }
     details = {
@@ -123,6 +122,7 @@ def test_phase2_writer_optional_dependencies():
         )
         assert os.path.exists(os.path.join(info["run_dir"], "prompts.parquet"))
         assert os.path.exists(info["attention_summary_path"])
+        assert "normalized_instruction_ratio" in writer.attention_arrays
 
 
 def test_selected_heads_parquet_optional_dependencies():

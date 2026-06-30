@@ -41,6 +41,33 @@ class Phase2Writer:
             return None
         return float(np.nanmean(value))
 
+    @staticmethod
+    def _normalize_attention_summary(summary: dict[str, np.ndarray]) -> dict[str, np.ndarray]:
+        if not summary:
+            raise RuntimeError(
+                "Phase2 attention summary is empty. The model did not return usable "
+                "attention maps for this sample."
+            )
+        if "normalized_instruction_ratio" not in summary and "ratio" in summary:
+            summary["normalized_instruction_ratio"] = summary["ratio"]
+        if "ratio" not in summary and "normalized_instruction_ratio" in summary:
+            summary["ratio"] = summary["normalized_instruction_ratio"]
+
+        required = (
+            "instruction_mass",
+            "data_mass",
+            "normalized_instruction_ratio",
+            "ratio",
+            "entropy",
+        )
+        missing = [key for key in required if key not in summary]
+        if missing:
+            raise KeyError(
+                "Phase2 attention summary is missing required keys: "
+                + ", ".join(missing)
+            )
+        return summary
+
     def add_sample(
         self,
         example,
@@ -52,6 +79,7 @@ class Phase2Writer:
         seed: int,
         params: dict[str, Any],
     ) -> None:
+        attention_summary = self._normalize_attention_summary(attention_summary)
         self.prompt_rows.append(
             {
                 "prompt_id": example.prompt_id,
