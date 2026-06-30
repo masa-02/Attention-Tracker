@@ -69,6 +69,51 @@ class AttentionModelNoSys(Model):
         return None
 
     @staticmethod
+    def _find_unique_char_span(text, target, field_name):
+        start = text.find(target)
+        if start < 0:
+            raise ValueError(f"Could not find {field_name} text in rendered prompt.")
+        second = text.find(target, start + 1)
+        if second >= 0:
+            raise ValueError(f"Could not uniquely locate {field_name} text in rendered prompt.")
+        return start, start + len(target)
+
+    @staticmethod
+    def _char_span_to_token_span(offsets, char_span, field_name):
+        char_start, char_end = char_span
+        token_indexes = []
+        for token_index, offset in enumerate(offsets):
+            start, end = int(offset[0]), int(offset[1])
+            if start == end == 0:
+                continue
+            if end <= char_start or start >= char_end:
+                continue
+            token_indexes.append(token_index)
+
+        if not token_indexes:
+            raise ValueError(f"Could not map {field_name} text to token span.")
+        return min(token_indexes), max(token_indexes) + 1
+
+    def _plain_prompt_data_range(self, text, instruction, data):
+        encoded = self.tokenizer(
+            text,
+            add_special_tokens=True,
+            return_offsets_mapping=True,
+        )
+        offsets = encoded.get("offset_mapping")
+        if offsets is None:
+            raise ValueError("Tokenizer did not return offset_mapping for plain prompt span mapping.")
+        if offsets and isinstance(offsets[0], list):
+            offsets = offsets[0]
+
+        instruction_chars = self._find_unique_char_span(text, instruction, "instruction")
+        data_chars = self._find_unique_char_span(text, data, "data")
+        return (
+            self._char_span_to_token_span(offsets, instruction_chars, "instruction"),
+            self._char_span_to_token_span(offsets, data_chars, "data"),
+        )
+
+    @staticmethod
     def _absolute_range(rng, length):
         start, end = rng
         if start < 0:
@@ -114,7 +159,8 @@ class AttentionModelNoSys(Model):
     def inference(self, instruction, data, max_output_tokens=None, return_trace=False):
         data_prefix = str(self.prompt_config.get("data_prefix", "Data: "))
         prefixed_data = data_prefix + data
-        if self.prompt_config.get("format") == "plain":
+        plain_prompt = self.prompt_config.get("format") == "plain"
+        if plain_prompt:
             template = self.prompt_config.get(
                 "template",
                 "{instruction}\n{prefixed_data}\nAnswer:",
@@ -150,17 +196,21 @@ class AttentionModelNoSys(Model):
         input_tokens = self.tokenizer.convert_ids_to_tokens(
             model_inputs['input_ids'][0])
 
-        dynamic_range = self._dynamic_data_range(model_inputs["input_ids"][0].tolist(), instruction, span_data_text)
-        if dynamic_range is not None:
-            data_range, span_source = dynamic_range
-        elif "gemma" in self.name:
-            data_range = ((5, 5+instruction_len), (-4-data_len, -5))
-            span_source = "fixed_offset"
+        if plain_prompt:
+            data_range = self._plain_prompt_data_range(text, instruction, span_data_text)
+            span_source = "plain_offset"
         else:
-            raise ValueError(
-                f"Could not resolve instruction/data spans for {self.name}. "
-                "Use a model name with a known fallback or inspect the chat template."
-            )
+            dynamic_range = self._dynamic_data_range(model_inputs["input_ids"][0].tolist(), instruction, span_data_text)
+            if dynamic_range is not None:
+                data_range, span_source = dynamic_range
+            elif "gemma" in self.name:
+                data_range = ((5, 5+instruction_len), (-4-data_len, -5))
+                span_source = "fixed_offset"
+            else:
+                raise ValueError(
+                    f"Could not resolve instruction/data spans for {self.name}. "
+                    "Use a model name with a known fallback or inspect the chat template."
+                )
 
         generated_tokens = []
         generated_probs = []  # Store probabilities of generated tokens

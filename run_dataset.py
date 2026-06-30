@@ -48,7 +48,31 @@ def _legacy_span(trace, name, key):
     return TokenSpan(start=int(start), end=int(end), source="legacy_trace")
 
 
+def _trace_span(trace, key, source):
+    start, end = trace[key]
+    return TokenSpan(start=int(start), end=int(end), source=source)
+
+
 def _resolve_phase2_spans(span_mapper, trace, input_ids, sample_instruction, data_text, injection, strict_spans):
+    trace_span_source = trace.get("span_source")
+    if strict_spans and trace_span_source == "plain_offset":
+        return {
+            "system_instruction": _trace_span(
+                trace, "instruction_range_abs", trace_span_source
+            ),
+            "untrusted_data": _trace_span(trace, "data_range_abs", trace_span_source),
+            "last_input_token": TokenSpan(
+                start=max(len(input_ids) - 1, 0),
+                end=len(input_ids),
+                source="derived",
+            ),
+            "assistant_prefix": TokenSpan(
+                start=max(len(input_ids) - 1, 0),
+                end=len(input_ids),
+                source="derived",
+            ),
+        }
+
     if strict_spans:
         return span_mapper.resolve_attention_tracker_spans(
             input_ids=input_ids,
