@@ -8,3 +8,6 @@ analysis.txt
 # env
 /.venv
 /.venv/
+
+# Analysis
+/analysis/

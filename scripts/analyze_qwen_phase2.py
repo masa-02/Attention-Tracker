@@ -17,7 +17,7 @@ EXPECTED_ATTENTION_KEYS = {
     "normalized_instruction_ratio",
     "entropy",
 }
-EXPECTED_RUNS = 9
+EXPECTED_RUNS = 12
 EXPECTED_PROMPTS = 116
 EXPECTED_TOKEN_SPANS = 464
 
@@ -62,7 +62,9 @@ def derive_model_group(model: str) -> str:
     if "qwen2.5-coder" in name:
         return "Qwen2.5-Coder"
     if "qwen2.5" in name:
-        return "Qwen2.5"
+        if "instruct" in name:
+            return "Qwen2.5-Instruct"
+        return "Qwen2.5-Base"
     if "qwen3" in name:
         return "Qwen3"
     return "Qwen"
@@ -74,7 +76,12 @@ def derive_params_b(model: str) -> float:
 
 
 def sort_key(model: str) -> tuple[int, float, str]:
-    group_order = {"Qwen2.5": 0, "Qwen2.5-Coder": 1, "Qwen3": 2}
+    group_order = {
+        "Qwen2.5-Base": 0,
+        "Qwen2.5-Instruct": 1,
+        "Qwen2.5-Coder": 2,
+        "Qwen3": 3,
+    }
     group = derive_model_group(model)
     return (group_order.get(group, 9), derive_params_b(model), model)
 

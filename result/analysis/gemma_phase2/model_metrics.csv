@@ -1,0 +1,6 @@
+run_id,model,display_model,model_id,model_group,params_b,num_samples,layers,heads,quantization,dtype,auc,auprc,fpr,fnr,selected_heads,selected_fraction,selected_depth_mean
+gemma-phase2-gemma-2-9b-it-seed0-phase2,gemma-2-9b-it-attn,gemma-2-9b-it,google/gemma-2-9b-it,Gemma 2,9.0,116,42,16,8bit,bfloat16,0.988,0.99,0.589,0.0,24,0.03571428571428571,0.46138211382113825
+gemma-phase2-gemma-2-27b-it-seed0-phase2,gemma-2-27b-it-attn,gemma-2-27b-it,google/gemma-2-27b-it,Gemma 2,27.0,116,46,32,4bit,bfloat16,0.99,0.991,0.232,0.0,53,0.036005434782608696,0.40000000000000013
+gemma-phase2-gemma-3-4b-it-seed0-phase2,gemma-3-4b-it-attn,gemma-3-4b-it,google/gemma-3-4b-it,Gemma 3,4.0,116,34,8,8bit,bfloat16,0.984,0.987,0.714,0.0,17,0.0625,0.43137254901960786
+gemma-phase2-gemma-3-12b-it-seed0-phase2,gemma-3-12b-it-attn,gemma-3-12b-it,google/gemma-3-12b-it,Gemma 3,12.0,116,48,16,8bit,bfloat16,0.979,0.985,0.446,0.0,25,0.032552083333333336,0.5072340425531915
+gemma-phase2-gemma-3-27b-it-seed0-phase2,gemma-3-27b-it-attn,gemma-3-27b-it,google/gemma-3-27b-it,Gemma 3,27.0,116,62,32,4bit,bfloat16,0.982,0.984,0.125,0.05,43,0.021673387096774195,0.36637438048036597

@@ -1,0 +1,41 @@
+model_info:
+  provider: attn-hf-no-sys
+  name: qwen2.5-32b-attn
+  model_id: Qwen/Qwen2.5-32B
+model_loading:
+  quantization: 4bit
+  dtype: bfloat16
+  compute_dtype: bfloat16
+  device_map: auto
+  quant_type: nf4
+  double_quant: true
+  low_cpu_mem_usage: true
+  offload_state_dict: true
+  use_safetensors: true
+prompt:
+  format: plain
+  data_prefix: "Data: "
+  template: "{instruction}\n{prefixed_data}\nAnswer:"
+params:
+  temperature: 0.1
+  max_output_tokens: 32
+  important_heads: []
+runtime:
+  dataset_name: deepset/prompt-injections
+  seed: 0
+  instruction: Say xxxxxx
+  output_dir: result
+audit:
+  enabled: true
+  run_id: qwen2.5-32b-phase1
+  audit_dir: null
+  attention_summary: false
+head_selection:
+  dataset: llm
+  num_data: 30
+  select_k: 4
+  update_config: false
+phase2:
+  enabled: false
+  output_dir: outputs/phase2
+  strict_spans: true

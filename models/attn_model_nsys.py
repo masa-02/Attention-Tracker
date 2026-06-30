@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from transformers import AutoTokenizer
 from .utils import (
     causal_model_class_for_model,
+    get_last_attn,
     model_kwargs_for_model,
     sample_token,
     tokenizer_kwargs_for_model,
@@ -17,6 +18,7 @@ class AttentionModelNoSys(Model):
         super().__init__(config)
         self.name = config["model_info"]["name"]
         self.max_output_tokens = int(config["params"]["max_output_tokens"])
+        self.prompt_config = config.get("prompt", {})
         model_id = config["model_info"]["model_id"]
         loading_config = config.get("model_loading", {})
         self.tokenizer = AutoTokenizer.from_pretrained(
@@ -110,31 +112,45 @@ class AttentionModelNoSys(Model):
         }
 
     def inference(self, instruction, data, max_output_tokens=None, return_trace=False):
-        data = "Data: " + data
-        messages = [
-            {"role": "user", "content": instruction + "\n" + data},
-        ]
+        data_prefix = str(self.prompt_config.get("data_prefix", "Data: "))
+        prefixed_data = data_prefix + data
+        if self.prompt_config.get("format") == "plain":
+            template = self.prompt_config.get(
+                "template",
+                "{instruction}\n{prefixed_data}\nAnswer:",
+            )
+            text = template.format(
+                instruction=instruction,
+                data=data,
+                prefixed_data=prefixed_data,
+            )
+            span_data_text = prefixed_data
+        else:
+            span_data_text = prefixed_data
+            messages = [
+                {"role": "user", "content": instruction + "\n" + span_data_text},
+            ]
 
-        chat_template_kwargs = {}
-        if "gemma-4" in self.name or "gemma4" in self.name:
-            chat_template_kwargs["enable_thinking"] = False
+            chat_template_kwargs = {}
+            if "gemma-4" in self.name or "gemma4" in self.name:
+                chat_template_kwargs["enable_thinking"] = False
 
-        text = self.tokenizer.apply_chat_template(
-            messages,
-            tokenize=False,
-            add_generation_prompt=True,
-            **chat_template_kwargs,
-        )
+            text = self.tokenizer.apply_chat_template(
+                messages,
+                tokenize=False,
+                add_generation_prompt=True,
+                **chat_template_kwargs,
+            )
 
         instruction_len = len(self.tokenizer.encode(instruction))
-        data_len = len(self.tokenizer.encode(data))
+        data_len = len(self.tokenizer.encode(span_data_text))
 
         model_inputs = self.tokenizer(
             [text], return_tensors="pt").to(self.model.device)
         input_tokens = self.tokenizer.convert_ids_to_tokens(
             model_inputs['input_ids'][0])
 
-        dynamic_range = self._dynamic_data_range(model_inputs["input_ids"][0].tolist(), instruction, data)
+        dynamic_range = self._dynamic_data_range(model_inputs["input_ids"][0].tolist(), instruction, span_data_text)
         if dynamic_range is not None:
             data_range, span_source = dynamic_range
         elif "gemma" in self.name:
@@ -198,6 +214,7 @@ class AttentionModelNoSys(Model):
                                  for attention in output['attentions']]
                 attention_map = [torch.nan_to_num(
                     attention, nan=0.0) for attention in attention_map]
+                attention_map = get_last_attn(attention_map)
                 attention_maps.append(attention_map)
 
         output_tokens = [self.tokenizer.decode(
