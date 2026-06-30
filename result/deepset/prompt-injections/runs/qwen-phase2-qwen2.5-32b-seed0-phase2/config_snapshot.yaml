@@ -1,0 +1,104 @@
+config_path: /home/mkoba/Sec4AI-Exp/examples/Attention-Tracker/configs/runtime/qwen2.5-32b.yml
+config:
+  model_info:
+    provider: attn-hf-no-sys
+    name: qwen2.5-32b-attn
+    model_id: Qwen/Qwen2.5-32B
+  model_loading:
+    quantization: 4bit
+    dtype: bfloat16
+    compute_dtype: bfloat16
+    device_map: auto
+    quant_type: nf4
+    double_quant: true
+    low_cpu_mem_usage: true
+    offload_state_dict: true
+    use_safetensors: true
+  prompt:
+    format: plain
+    data_prefix: 'Data: '
+    template: '{instruction}
+
+      {prefixed_data}
+
+      Answer:'
+  params:
+    temperature: 0.1
+    max_output_tokens: 32
+    important_heads:
+    - - 6
+      - 18
+    - - 15
+      - 9
+    - - 18
+      - 29
+    - - 18
+      - 32
+    - - 18
+      - 33
+    - - 21
+      - 10
+    - - 21
+      - 12
+    - - 22
+      - 1
+    - - 22
+      - 4
+    - - 23
+      - 10
+    - - 25
+      - 20
+    - - 25
+      - 33
+    - - 28
+      - 14
+    - - 28
+      - 36
+    - - 28
+      - 38
+    - - 29
+      - 15
+    - - 29
+      - 23
+    - - 30
+      - 9
+    - - 30
+      - 20
+    - - 34
+      - 24
+    - - 41
+      - 9
+  runtime:
+    dataset_name: deepset/prompt-injections
+    seed: 0
+    instruction: Say xxxxxx
+    output_dir: result
+  audit:
+    enabled: true
+    run_id: qwen2.5-32b-phase1
+    audit_dir: null
+    attention_summary: false
+  head_selection:
+    dataset: llm
+    num_data: 30
+    select_k: 4
+    update_config: false
+  phase2:
+    enabled: false
+    output_dir: outputs/phase2
+    strict_spans: true
+runtime:
+  dataset_name: deepset/prompt-injections
+  seed: 0
+  instruction: Say xxxxxx
+  output_dir: result
+audit:
+  enabled: true
+  attention_summary: true
+  run_id: qwen-phase2-qwen2.5-32b-seed0-phase2
+  audit_dir: result/deepset/prompt-injections/runs/qwen-phase2-qwen2.5-32b-seed0-phase2
+phase2:
+  enabled: true
+  output_dir: outputs/phase2
+  prompt_jsonl: null
+  strict_spans: true

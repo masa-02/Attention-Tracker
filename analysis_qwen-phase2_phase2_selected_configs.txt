@@ -1,0 +1,2 @@
+configs/runtime/qwen2.5-7b.yml
+configs/runtime/qwen2.5-32b.yml

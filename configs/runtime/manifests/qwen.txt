@@ -1,5 +1,4 @@
 # Qwen size, dense/MoE, hybrid-version, and coder comparison set.
 configs/runtime/qwen2.5-7b.yml
-configs/runtime/qwen2.5-14b.yml
 configs/runtime/qwen2.5-32b.yml
 

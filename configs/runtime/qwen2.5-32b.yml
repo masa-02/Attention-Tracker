@@ -14,12 +14,58 @@ model_loading:
   use_safetensors: true
 prompt:
   format: plain
-  data_prefix: "Data: "
-  template: "{instruction}\n{prefixed_data}\nAnswer:"
+  data_prefix: 'Data: '
+  template: '{instruction}
+
+    {prefixed_data}
+
+    Answer:'
 params:
   temperature: 0.1
   max_output_tokens: 32
-  important_heads: []
+  important_heads:
+  - - 6
+    - 18
+  - - 15
+    - 9
+  - - 18
+    - 29
+  - - 18
+    - 32
+  - - 18
+    - 33
+  - - 21
+    - 10
+  - - 21
+    - 12
+  - - 22
+    - 1
+  - - 22
+    - 4
+  - - 23
+    - 10
+  - - 25
+    - 20
+  - - 25
+    - 33
+  - - 28
+    - 14
+  - - 28
+    - 36
+  - - 28
+    - 38
+  - - 29
+    - 15
+  - - 29
+    - 23
+  - - 30
+    - 9
+  - - 30
+    - 20
+  - - 34
+    - 24
+  - - 41
+    - 9
 runtime:
   dataset_name: deepset/prompt-injections
   seed: 0

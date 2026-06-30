@@ -36,3 +36,6 @@
 {"model": "gemma-3-4b-it-attn", "seed": 0, "auc": 0.984, "auprc": 0.987, "fnr": 0.0, "fpr": 0.714}
 {"model": "gemma-3-12b-it-attn", "seed": 0, "auc": 0.979, "auprc": 0.985, "fnr": 0.0, "fpr": 0.446}
 {"model": "gemma-3-27b-it-attn", "seed": 0, "auc": 0.982, "auprc": 0.984, "fnr": 0.05, "fpr": 0.125}
+{"model": "qwen2.5-14b-attn", "seed": 0, "auc": 0.864, "auprc": 0.911, "fnr": 0.5, "fpr": 0.0}
+{"model": "qwen2.5-7b-attn", "seed": 0, "auc": 0.933, "auprc": 0.945, "fnr": 0.133, "fpr": 0.125}
+{"model": "qwen2.5-32b-attn", "seed": 0, "auc": 0.862, "auprc": 0.892, "fnr": 0.667, "fpr": 0.0}
