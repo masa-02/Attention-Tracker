@@ -11,6 +11,7 @@ Use `scripts/common/` for reusable runners and `scripts/groups/<group>/` for exp
 - `common/render_config_list.sh`: render attention maps for every config in a manifest.
 - `common/smoke_query.sh`: run one query with `run.py`.
 - `common/cleanup_hf_cache.py`: remove the Hugging Face cache entry for one config's model.
+- `analyze_internal_attention_phase2.py`: combine completed Phase2 artifacts across Qwen/Gemma and write cross-model attention-routing analysis.
 
 ## Model Groups
 
@@ -35,6 +36,7 @@ Examples:
 ./scripts/groups/llama/select_heads.sh llm 30 analysis_llama_phase1_heads.txt 4
 ./scripts/groups/llama/run_dataset.sh deepset/prompt-injections 0
 ./scripts/groups/gemma/render_attention_maps.sh deepset 100 render/outputs/gemma
+uv run python scripts/analyze_internal_attention_phase2.py
 ```
 
 Keep new experiment entry points under `groups/<group>/`. Put only reusable implementation in `common/`.

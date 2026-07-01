@@ -1,0 +1,2 @@
+model_a,model_b,display_model_a,display_model_b,family_a,family_b,generation_a,generation_b,variant_a,variant_b,params_b_a,params_b_b,same_shape,same_qwen25_size,selected_a,selected_b,exact_overlap,exact_jaccard,normalized_depth_density_cosine,normalized_depth_bin_jaccard,signature_cosine
+qwen2.5-7b-attn,qwen2.5-7b-instruct-attn,qwen2.5-7b,qwen2.5-7b-instruct,Qwen,Qwen,Qwen2.5,Qwen2.5,base,instruct,7.0,7.0,True,True,6,24,4,0.15384615384615385,0.41640649388658973,0.5,-1.0

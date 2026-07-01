@@ -1,0 +1,2 @@
+params_b,variant_a,variant_b,model_a,model_b,auc_delta_b_minus_a,fpr_delta_b_minus_a,fnr_delta_b_minus_a,risk_delta_b_minus_a,attack_instruction_ratio_delta_b_minus_a,selected_fraction_delta_b_minus_a,selected_depth_delta_b_minus_a,exact_head_jaccard,normalized_depth_cosine,signature_cosine
+7.0,base,instruct,qwen2.5-7b-attn,qwen2.5-7b-instruct-attn,0.04136904761904747,-0.053571428571428575,-0.033333333333333326,0.03659162226480289,-0.40731882136315106,0.022959183673469385,-0.07098765432098775,0.15384615384615385,0.41640649388658973,-1.0

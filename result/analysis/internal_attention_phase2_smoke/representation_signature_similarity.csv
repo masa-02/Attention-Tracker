@@ -1,0 +1,3 @@
+model,qwen2.5-7b-attn,qwen2.5-7b-instruct-attn
+qwen2.5-7b-attn,1.0,-1.0
+qwen2.5-7b-instruct-attn,-1.0,1.0

@@ -1,0 +1,53 @@
+run_id,model,display_model,model_id,provider,family,generation,variant,params_b,layers,heads,quantization,dtype,label,count,focus_score_mean,focus_score_std,focus_score_median,risk_score_mean,risk_score_std,risk_score_median,mean_instruction_mass_mean,mean_instruction_mass_std,mean_instruction_mass_median,mean_data_mass_mean,mean_data_mass_std,mean_data_mass_median,mean_ratio_mean,mean_ratio_std,mean_ratio_median,mean_normalized_instruction_ratio_mean,mean_normalized_instruction_ratio_std,mean_normalized_instruction_ratio_median,mean_entropy_mean,mean_entropy_std,mean_entropy_median
+qwen-phase2-qwen2.5-7b-seed0-phase2,qwen2.5-7b-attn,qwen2.5-7b,Qwen/Qwen2.5-7B,attn-hf-no-sys,Qwen,Qwen2.5,base,7.0,28,28,8bit,bfloat16,0,56,0.6197788256797052,0.1174140408148289,0.5870918234189352,0.3802211743202948,0.1174140408148289,0.4129081765810648,"mean_instruction_mass    0.489364
+mean_instruction_mass    0.489364
+dtype: float64","mean_instruction_mass    0.020901
+mean_instruction_mass    0.020901
+dtype: float64","mean_instruction_mass    0.484849
+mean_instruction_mass    0.484849
+dtype: float64","mean_data_mass    0.246131
+mean_data_mass    0.246131
+dtype: float64","mean_data_mass    0.063308
+mean_data_mass    0.063308
+dtype: float64","mean_data_mass    0.272018
+mean_data_mass    0.272018
+dtype: float64",0.6306221570287432,0.059165420847173696,0.605058491230011,0.6306221570287432,0.059165420847173696,0.605058491230011,0.5018727193985667,0.03217677957756337,0.50731161236763
+qwen-phase2-qwen2.5-7b-seed0-phase2,qwen2.5-7b-attn,qwen2.5-7b,Qwen/Qwen2.5-7B,attn-hf-no-sys,Qwen,Qwen2.5,base,7.0,28,28,8bit,bfloat16,1,60,0.3325002938867935,0.1374357064731302,0.3281492586247623,0.6674997061132065,0.13743570647313016,0.6718507413752377,"mean_instruction_mass    0.449418
+mean_instruction_mass    0.449418
+dtype: float64","mean_instruction_mass    0.028933
+mean_instruction_mass    0.028933
+dtype: float64","mean_instruction_mass    0.445428
+mean_instruction_mass    0.445428
+dtype: float64","mean_data_mass    0.317029
+mean_data_mass    0.317029
+dtype: float64","mean_data_mass    0.055301
+mean_data_mass    0.055301
+dtype: float64","mean_data_mass    0.32493
+mean_data_mass    0.32493
+dtype: float64",0.5583329369624456,0.05061307509407907,0.5528940856456757,0.5583329369624456,0.05061307509407907,0.5528940856456757,0.49315579831600187,0.03500791538251333,0.49722905457019806
+qwen-phase2-qwen2.5-7b-instruct-seed0-phase2,qwen2.5-7b-instruct-attn,qwen2.5-7b-instruct,Qwen/Qwen2.5-7B-Instruct,attn-hf,Qwen,Qwen2.5,instruct,7.0,28,28,8bit,bfloat16,0,56,0.6654020930512897,0.12420607515487563,0.6348899719305336,0.33459790694871033,0.12420607515487563,0.36511002806946635,"mean_instruction_mass    0.03291
+mean_instruction_mass    0.03291
+dtype: float64","mean_instruction_mass    0.004302
+mean_instruction_mass    0.004302
+dtype: float64","mean_instruction_mass    0.032141
+mean_instruction_mass    0.032141
+dtype: float64","mean_data_mass    0.148672
+mean_data_mass    0.148672
+dtype: float64","mean_data_mass    0.048105
+mean_data_mass    0.048105
+dtype: float64","mean_data_mass    0.152094
+mean_data_mass    0.152094
+dtype: float64",0.2695201717849289,0.08332378895445344,0.24166081100702286,0.2695201717849289,0.08332378895445344,0.24166081100702286,0.5093288118285793,0.02191288367236331,0.5133222341537476
+qwen-phase2-qwen2.5-7b-instruct-seed0-phase2,qwen2.5-7b-instruct-attn,qwen2.5-7b-instruct,Qwen/Qwen2.5-7B-Instruct,attn-hf,Qwen,Qwen2.5,instruct,7.0,28,28,8bit,bfloat16,1,60,0.3415319389935753,0.1366303134392105,0.3722014554853862,0.658468061006425,0.1366303134392105,0.6277985445146138,"mean_instruction_mass    0.026576
+mean_instruction_mass    0.026576
+dtype: float64","mean_instruction_mass    0.006944
+mean_instruction_mass    0.006944
+dtype: float64","mean_instruction_mass    0.02645
+mean_instruction_mass    0.02645
+dtype: float64","mean_data_mass    0.226337
+mean_data_mass    0.226337
+dtype: float64","mean_data_mass    0.046279
+mean_data_mass    0.046279
+dtype: float64","mean_data_mass    0.220279
+mean_data_mass    0.220279
+dtype: float64",0.1510141155992945,0.04975692744101379,0.15600671619176865,0.1510141155992945,0.04975692744101379,0.15600671619176865,0.5068213467796644,0.0317526305840283,0.5116069614887238
